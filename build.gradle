@@ -1,0 +1,32 @@
+plugins {
+    id 'java'
+    id 'application'
+}
+
+group = 'com.team02'
+version = '0.1.0'
+
+repositories {
+    mavenCentral()
+}
+
+java {
+    // 팀원 전원 JDK 21 사용
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+}
+
+application {
+    mainClass = 'com.team02.cinema.Application'
+    applicationDefaultJvmArgs = ['-Dfile.encoding=UTF-8', '-Dstdout.encoding=UTF-8']
+}
+
+tasks.named('run') {
+    // 콘솔 입력(Scanner)을 gradle run에서도 받을 수 있게 한다.
+    standardInput = System.in
+}

@@ -1,0 +1,20 @@
+# Gradle
+.gradle/
+build/
+!gradle/wrapper/gradle-wrapper.jar
+
+# IntelliJ IDEA (각자 IDE 설정은 공유하지 않음 - Gradle 프로젝트로 열면 자동 생성)
+.idea/
+*.iml
+out/
+
+# VS Code / Eclipse
+.vscode/
+.classpath
+.project
+.settings/
+bin/
+
+# OS
+.DS_Store
+Thumbs.db

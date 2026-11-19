@@ -15,7 +15,7 @@ public class PointService {
     private final Map<Integer, Integer> resultBalances = new HashMap<>();
 
 
-    /// // 모든 회원의 포인트 내역
+    /// // 모든 회원의 포인트 사용 내역
     private final List<Point> pointHistories = new ArrayList<>();
 
 
@@ -27,7 +27,6 @@ public class PointService {
 
         resultBalances.put(memberId, point);
 
-        pointHistories.add(new Point(PointType.EARN, 0, null, memberId));
 
     }
 
@@ -52,12 +51,33 @@ public class PointService {
         }
 
         /// 포인트 사용 차감
-        resultBalances.put(memberId, getBalance(memberId)- amount);
+        resultBalances.put(memberId, getBalance(memberId) - amount);
 
-
+        addHistory(memberId, paymentId, amount, PointType.USE);
 
 
     }
 
+    /// 포인트 사용 ->> 내역 추가
+    private void addHistory(int memberId, String paymentId, int amount, PointType pointType) {
+
+        Point point = new Point(pointType, amount, paymentId, memberId);
+        pointHistories.add(point);  /// 포인트 사용 내역 추가.
+    }
+
+    /// 포인트 내역 조회
+    public void showPoint(int memberId) {
+
+        for (Point pointHistory : pointHistories) {
+
+        }
+
+        System.out.println("\\n===== 내 포인트 조회 =====");
+        System.out.println("현재 포인트: " + getBalance(memberId));
+        System.out.println("=== 포인트 사용 내역 ====");
+        System.out.println("결제 번호: "  );
+
+
+    }
 
 }

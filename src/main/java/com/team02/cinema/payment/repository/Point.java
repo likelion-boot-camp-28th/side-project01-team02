@@ -12,7 +12,7 @@ public class Point {
     private String paymentId;
 
     // 포인트 변동량
-    // 적립: +1000, 사용: -1000
+    // 사용 금액
     private int amount;
 
     // 포인트 처리 유형

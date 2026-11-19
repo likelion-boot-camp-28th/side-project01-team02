@@ -1,56 +1,63 @@
 package com.team02.cinema.theater.domain;
 
-import java.util.ArrayList;
+import com.team02.cinema.movie.domain.schedule.Schedule;
+
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.stream.IntStream;
 
 public class Screen {
-    private List<List<Seat>> seats;
+    private final int row;
+    private final int col;
+    private final Map<Schedule, List<List<Seat>>> seats;
 
     public Screen(int row, int col){
-        this.seats = initializeSeats(row, col);
-    }
-
-    private List<List<Seat>> initializeSeats(int row, int col) {
         if (row < 1 || col < 1) {
             throw new IllegalArgumentException("잘못된 좌석 크기입니다.");
         }
-
-        List<List<Seat>> seats = new ArrayList<>();
-        for (int i = 0; i < row; i++) {
-            List<Seat> rows = new ArrayList<>();
-            for (int j = 1; j <= col; j++) {
-                rows.add(new Seat());
-            }
-            seats.add(List.copyOf(rows));
-        }
-
-        return List.copyOf(seats);
+        this.row = row;
+        this.col = col;
+        seats = new HashMap<>();
     }
 
-    public void printSeats(){
-        StringBuilder stringBuilder = new StringBuilder();
+    private List<List<Seat>> initializeSeats() {
+        return IntStream.range(0, row)
+                .mapToObj(i -> IntStream.range(0, col).mapToObj(j -> new Seat(i, j)).toList())
+                .toList();
+    }
 
-        stringBuilder.append("  ");
-
-        for(int i = 1; i <= seats.size(); i++){
-            stringBuilder.append(" ").append(i).append(" ");
+    public void addSchedule(Schedule schedule){
+        if (schedule == null) {
+            throw new IllegalArgumentException("스케줄은 필수입니다.");
         }
+        if (seats.putIfAbsent(schedule, initializeSeats()) != null) {
+            throw new IllegalArgumentException("이미 등록된 스케줄입니다.");
+        }
+    }
 
-        String screen = "[ SCREEN ]";
-        int screenPos = (stringBuilder.length() / 2) - (screen.length() / 2) + 1;
-        System.out.print(" ".repeat(screenPos));
-        System.out.println(screen);
-        System.out.println();
-        System.out.println(stringBuilder);
+    public List<List<Seat>> getSeats(Schedule schedule) {
+        return Optional.ofNullable(seats.get(schedule))
+                .orElseThrow(() -> new IllegalArgumentException("등록되지 않은 스케줄입니다."));
+    }
 
-        IntStream.range(0, seats.size()).forEach(i ->{
-            List<Seat> row = seats.get(i);
-            System.out.print(i + 1 + " ");
-            IntStream.range(0, row.size()).forEach(j ->{
-                System.out.print("[" + (row.get(j).isReserved() ? 'X' : ' ') + ']');
-            });
-            System.out.println();
-        });
+    public Seat getSeat(Schedule schedule, int row, int col) {
+        if (row < 0 || row >= this.row || col < 0 || col >= this.col) {
+            throw new IllegalArgumentException("존재하지 않는 좌석입니다.");
+        }
+        return getSeats(schedule).get(row).get(col);
+    }
+
+    public List<Seat> getAvailableSeats(Schedule schedule) {
+        return getSeats(schedule).stream()
+                .flatMap(List::stream)
+                .filter(seat -> !seat.isReserved())
+                .toList();
+    }
+
+    @Override
+    public String toString() {
+        return "좌석 수 : " + (row * col);
     }
 }

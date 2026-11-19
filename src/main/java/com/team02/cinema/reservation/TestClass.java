@@ -29,11 +29,11 @@ public class TestClass {
         Member member = new Member("test", "1234", "홍길동", LocalDate.of(2000, 1, 1));
 
         title("1. 좌석 선택 후 예약 생성 (C5, C6)");
-        List<Seat> seats = List.of(theater.getSeat(1, schedule, 2, 4), theater.getSeat(1, schedule, 2, 5));
+        List<Seat> seats = List.of(theater.getSeat(schedule, 2, 4), theater.getSeat(schedule, 2, 5));
         seats.forEach(seat -> seat.reserve(member));
         Reservation reservation = new Reservation(1L, member, schedule, seats);
         printReservation(reservation);
-        view.printSeats(theater.getScreenSeats(1, schedule));
+        view.printSeats(theater.getSeats(schedule));
 
         title("2. 저장소 저장 - 아이디 없는 예약에 번호가 붙는지 확인");
         ReservationRepository repository = new MemoryReservationRepository();

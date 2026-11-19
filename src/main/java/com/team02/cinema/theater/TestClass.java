@@ -31,34 +31,34 @@ public class TestClass {
         Member member = new Member("test", "1234", "홍길동", LocalDate.of(2000, 1, 1));
 
         title("2. 예약 전 - 1관 오전 회차");
-        view.printSeats(service.getScreenSeats(1, morning));
+        view.printSeats(service.getSeats(morning));
 
         title("3. 오전 회차 A1, B3, E6 예약");
-        service.reserveSeat(1, morning, 0, 0, member);
-        service.reserveSeat(1, morning, 1, 2, member);
-        service.reserveSeat(1, morning, 4, 5, member);
-        view.printSeats(service.getScreenSeats(1, morning));
-        System.out.println("빈 좌석 수 : " + service.getAvailableSeats(1, morning).size());
+        service.reserveSeat(morning, 0, 0, member);
+        service.reserveSeat(morning, 1, 2, member);
+        service.reserveSeat(morning, 4, 5, member);
+        view.printSeats(service.getSeats(morning));
+        System.out.println("빈 좌석 수 : " + service.getAvailableSeats(morning).size());
 
         title("4. 같은 좌석, 저녁 회차는 영향 없음");
-        view.printSeats(service.getScreenSeats(1, evening));
-        System.out.println("빈 좌석 수 : " + service.getAvailableSeats(1, evening).size());
+        view.printSeats(service.getSeats(evening));
+        System.out.println("빈 좌석 수 : " + service.getAvailableSeats(evening).size());
 
         title("5. 오전 B3 취소");
-        service.cancelSeat(1, morning, 1, 2);
-        view.printSeats(service.getScreenSeats(1, morning));
-        System.out.println("빈 좌석 수 : " + service.getAvailableSeats(1, morning).size());
+        service.cancelSeat(morning, 1, 2);
+        view.printSeats(service.getSeats(morning));
+        System.out.println("빈 좌석 수 : " + service.getAvailableSeats(morning).size());
 
         title("6. 좌석 단건 조회");
-        view.printSeat(service.getSeat(1, morning, 0, 0));
-        view.printSeat(service.getSeat(1, morning, 0, 1));
+        view.printSeat(service.getSeat(morning, 0, 0));
+        view.printSeat(service.getSeat(morning, 0, 1));
 
         title("7. 예외 상황");
-        expectError("이미 예약된 좌석(A1) 재예약", () -> service.reserveSeat(1, morning, 0, 0, member));
-        expectError("예약 안 된 좌석(B3) 취소", () -> service.cancelSeat(1, morning, 1, 2));
-        expectError("범위 밖 좌석(Z9)", () -> service.getSeat(1, morning, 25, 8));
+        expectError("이미 예약된 좌석(A1) 재예약", () -> service.reserveSeat(morning, 0, 0, member));
+        expectError("예약 안 된 좌석(B3) 취소", () -> service.cancelSeat(morning, 1, 2));
+        expectError("범위 밖 좌석(Z9)", () -> service.getSeat(morning, 25, 8));
         expectError("없는 상영관(9관)", () -> service.getScreen(9));
-        expectError("없는 스케줄(2관)", () -> service.getScreenSeats(2, morning));
+        expectError("등록 안 된 스케줄", () -> service.getSeats(new Schedule(9L, movie, service.getScreen(2), now, 10000)));
         expectError("중복 스케줄 등록", () -> service.addSchedule(1, morning));
     }
 

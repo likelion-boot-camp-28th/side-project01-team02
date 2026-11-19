@@ -22,14 +22,14 @@ public class TheaterController {
         theater.addSchedule(num, schedule);
     }
 
-    public void viewScreenSeats(int num, Schedule schedule){
-        view.printSeats(theater.getScreenSeats(num, schedule));
+    public void viewScreenSeats(Schedule schedule){
+        view.printSeats(theater.getSeats(schedule));
     }
     public void viewAllScreens(){
         view.printScreens(theater);
     }
 
-    public void seatLookup(int num, Schedule schedule, int row, int col){
-        view.printSeat(theater.getSeat(num, schedule, row, col));
+    public void seatLookup(Schedule schedule, int row, int col){
+        view.printSeat(theater.getSeat(schedule, row, col));
     }
 }

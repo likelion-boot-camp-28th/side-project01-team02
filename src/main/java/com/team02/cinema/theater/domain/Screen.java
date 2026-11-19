@@ -7,7 +7,6 @@ import java.util.stream.IntStream;
 public class Screen {
     private List<List<Seat>> seats;
 
-
     public Screen(int row, int col){
         this.seats = initializeSeats(row, col);
     }
@@ -47,7 +46,7 @@ public class Screen {
 
         IntStream.range(0, seats.size()).forEach(i ->{
             List<Seat> row = seats.get(i);
-            System.out.print(i + " ");
+            System.out.print(i + 1 + " ");
             IntStream.range(0, row.size()).forEach(j ->{
                 System.out.print("[" + (row.get(j).isReserved() ? 'X' : ' ') + ']');
             });

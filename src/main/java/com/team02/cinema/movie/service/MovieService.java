@@ -4,6 +4,7 @@ import com.team02.cinema.movie.domain.Movie.AgeRating;
 import com.team02.cinema.movie.domain.Movie.Genre;
 import com.team02.cinema.movie.domain.Movie.Movie;
 import com.team02.cinema.movie.repository.MovieRepository;
+import com.team02.cinema.movie.repository.ScheduleRepository;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -12,9 +13,12 @@ import java.util.Objects;
 public class MovieService {
 
     private final MovieRepository movieRepository;
+    // 영화 삭제 시 스케줄 존재 여부 확인용
+    private final ScheduleRepository scheduleRepository;
 
-    public MovieService(MovieRepository movieRepository) {
+    public MovieService(MovieRepository movieRepository, ScheduleRepository scheduleRepository) {
         this.movieRepository = movieRepository;
+        this.scheduleRepository = scheduleRepository;
     }
 
     // 목록 조회
@@ -43,5 +47,16 @@ public class MovieService {
                 Objects.requireNonNullElse(releaseDate, existing.getReleaseDate())
         );
         return movieRepository.save(updated);
+    }
+
+    // 영화 삭제: 없는 영화인지 먼저 확인하고, 스케줄이 있는 영화는 삭제할 수 없다
+    public void deleteMovie(Long id) {
+        if (movieRepository.findById(id).isEmpty()) {
+            throw new IllegalArgumentException("존재하지 않는 영화입니다. id=" + id);
+        }
+        if (scheduleRepository.existsByMovieId(id)) {
+            throw new IllegalStateException("상영 스케줄이 있는 영화는 삭제할 수 없습니다. id=" + id);
+        }
+        movieRepository.deleteById(id);
     }
 }

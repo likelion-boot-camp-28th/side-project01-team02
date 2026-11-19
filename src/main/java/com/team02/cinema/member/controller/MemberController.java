@@ -8,4 +8,11 @@ public class MemberController {
     public void logout(){
         loginMember = null;
     }
+
+    public boolean canEnterAdminMenu(){
+        if (loginMember == null){
+            return false;
+        }
+        return loginMember.isAdmin();
+    }
 }

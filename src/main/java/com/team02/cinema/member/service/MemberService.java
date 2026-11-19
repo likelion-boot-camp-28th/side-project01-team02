@@ -21,4 +21,16 @@ public class MemberService {
         Member member = new Member(loginId, password, name, birthDate);
         memberRepository.save(member);
     }
+
+    public Member login(String loginId, String password){
+        Optional<Member> found = memberRepository.findByLoginId(loginId);
+        if (found.isEmpty()) {
+            throw new IllegalArgumentException("아이디 또는 비밀번호가 일치하지 않습니다.");
+        }
+        Member member = found.get();
+        if (!member.matchesPassword(password)){
+            throw new IllegalArgumentException("아이디 또는 비밀번호가 일치하지 않습니다.");
+        }
+        return member;
+    }
 }

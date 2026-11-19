@@ -4,8 +4,6 @@ import java.time.LocalDateTime;
 
 public class Point {
 
-    // 포인트 내역 고유번호
-    private int pointId;
 
     // 포인트를 소유한 회원번호
     private int memberId;
@@ -19,21 +17,19 @@ public class Point {
 
     // 포인트 처리 유형
     // EARN: 적립, USE: 사용
-    // RESTORE: 사용 포인트 반환
-    // REVOKE: 적립 포인트 회수
-    private String type;
+    // RESTORE: 환불 시 사용했던 포인트 반환
+    // REVOKE: 환불 시 적립했던 포인트 회수
+    private PointType type;
 
     // 포인트 처리 날짜 및 시간
     private LocalDateTime createdAt;
 
 
-    public Point(int pointId, int memberId, String paymentId, int amount, String type, LocalDateTime createdAt) {
-        this.pointId = pointId;
-        this.memberId = memberId;
-        this.paymentId = paymentId;
-        this.amount = amount;
+    public Point(PointType type, int amount, String paymentId, int memberId) {
         this.type = type;
-        this.createdAt = createdAt;
+        this.amount = amount;
+        this.paymentId = paymentId;
+        this.memberId = memberId;
     }
 
 

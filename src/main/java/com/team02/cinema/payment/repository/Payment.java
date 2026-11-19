@@ -76,7 +76,7 @@ public class Payment {
     }
 
     public String getPaymentId() { return paymentId; }
-    public PaymentReservation getReservation() { return reservation; }
+    public Reservation getReservation() { return reservation; }
     public Integer getCouponId() { return couponId; }
     public int getOriginalAmount() { return originalAmount; }
     public int getCouponDiscount() { return couponDiscount; }
@@ -89,7 +89,6 @@ public class Payment {
     public boolean isRefunded() { return refunded; }
     public String getStatus() { return refunded ? "환불 완료" : "결제 완료"; }
 
-    public void markRefunded() {
-        refunded = true;
-    }
+
+
 }

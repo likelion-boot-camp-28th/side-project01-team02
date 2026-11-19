@@ -1,15 +1,8 @@
 package com.team02.cinema.payment.domain;
 
-import com.team02.cinema.payment.repository.Payment;
-import com.team02.cinema.payment.repository.Coupon;
-import com.team02.cinema.payment.service.CouponService;
-import com.team02.cinema.payment.service.PaymentService;
-import com.team02.cinema.payment.service.PointService;
 
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.util.List;
-import java.util.Locale;
+import com.team02.cinema.payment.service.CouponService;
+import com.team02.cinema.payment.service.PointService;
 import java.util.Scanner;
 
 public class PaymentMenu {

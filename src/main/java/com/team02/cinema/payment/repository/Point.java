@@ -24,6 +24,25 @@ public class Point {
     // 포인트 처리 날짜 및 시간
     private LocalDateTime createdAt;
 
+    public int getMemberId() {
+        return memberId;
+    }
+
+    public String getPaymentId() {
+        return paymentId;
+    }
+
+    public int getAmount() {
+        return amount;
+    }
+
+    public PointType getType() {
+        return type;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
 
     public Point(PointType type, int amount, String paymentId, int memberId) {
         this.type = type;

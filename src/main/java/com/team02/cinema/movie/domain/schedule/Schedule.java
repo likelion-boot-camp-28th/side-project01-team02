@@ -39,6 +39,26 @@ public class Schedule {
         }
     }
 
+    public Long getId() {
+        return id;
+    }
+
+    public Movie getMovie() {
+        return movie;
+    }
+
+    public Screen getScreen() {
+        return screen;
+    }
+
+    public LocalDateTime getStartTime() {
+        return startTime;
+    }
+
+    public int getBasePrice() {
+        return basePrice;
+    }
+
     // 이 회차가 상영관을 비워 주는 시각 (시작 + 상영시간 + 청소 시간)
     public LocalDateTime getEndTime() {
         return startTime.plusMinutes(movie.getRunningTime() + CLEANING_MINUTES);

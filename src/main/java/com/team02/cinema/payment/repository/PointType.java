@@ -7,6 +7,7 @@ public enum PointType {
     RESTORE,  // 환불 시 사용했던 포인트 반환
     REVOKE;    // 환불 시 적립했던 포인트 회수
 
+
 }
 
 

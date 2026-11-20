@@ -1,6 +1,5 @@
 package com.team02.cinema.payment.repository;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
@@ -108,5 +107,15 @@ public class Coupon {
         return !used && !LocalDateTime.now().isAfter(expirationDate);
     }
 
+    @Override
+    public boolean equals(Object object) {
+        if (object == null || getClass() != object.getClass()) return false;
+        Coupon coupon = (Coupon) object;
+        return couponId == coupon.couponId && memberId == coupon.memberId && discountAmount == coupon.discountAmount && used == coupon.used && name == coupon.name && Objects.equals(expirationDate, coupon.expirationDate);
+    }
 
+    @Override
+    public int hashCode() {
+        return Objects.hash(couponId, memberId, name, discountAmount, expirationDate, used);
+    }
 }

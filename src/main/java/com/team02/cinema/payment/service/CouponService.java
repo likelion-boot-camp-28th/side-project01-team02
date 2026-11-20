@@ -4,12 +4,13 @@ import com.team02.cinema.payment.repository.Coupon;
 
 import java.util.LinkedHashMap;
 
+import java.util.List;
 import java.util.Map;
 
 public class CouponService {
     /// // 쿠폰 발급, 조회, 사용
 
-
+    /// 일단: // 모든 회원의 쿠폰 목록
     /// Key: 쿠폰번호 / Value: 쿠폰 객체
     private final Map<Integer, Coupon> coupons = new LinkedHashMap<>(); /// 소유 쿠폰
 
@@ -19,33 +20,16 @@ public class CouponService {
         if (coupons.containsKey(coupon.getCouponId())) {    /// 중복 체크
             throw new IllegalArgumentException("중복 쿠폰 번호 입니다.");
         }
-        coupons.put(coupon.getCouponId(), coupon);  /// 키 값 == 쿠폰 번호 일치 시킨다.
+        coupons.put(coupon.getCouponId(), coupon);
 
     }
 
     /// 회원이 가진 쿠폰 조회
-    public void showMyCoupons(int memberId) {
-        System.out.println("\n===== 내 쿠폰 조회 =====");
+    public List<Coupon> getMyCoupons(int memberId) {
 
-        int count = 0; /// 쿠폰 갯수
-
-        for (Coupon value : coupons.values()) { /// 해당 회원 번호 쿠폰 조회
-            if (value.getMemberId() != memberId) {
-                continue;       /// 없는 경우 출력(X)
-            }
-
-            /// 있는 경우
-            count++;    /// 증가
-            System.out.println(value.getName());
-            System.out.println("  할인금액: " + value.getDiscountAmount());
-            System.out.println("  유효기간: " + value.getExpirationDate());
-            System.out.println("  상태: " + value.getStatus());
-            System.out.println("  쿠폰번호: " + value.getCouponId());
-        }
-
-
-        if (count == 0) System.out.println("보유한 쿠폰이 없습니다.");
-
+        return coupons.values().stream()
+                .filter(coupon -> coupon.getMemberId() == memberId)
+                .toList();
     }
 
     /// 사용할 쿠폰의 할인금액 계산
@@ -87,7 +71,6 @@ public class CouponService {
         Coupon coupon = findCoupon(memberId, couponId);
         coupon.use();
     }
-
 
 
 }

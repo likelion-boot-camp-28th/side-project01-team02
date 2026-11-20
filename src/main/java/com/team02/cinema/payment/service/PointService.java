@@ -21,11 +21,9 @@ public class PointService {
     /// 초기 포인트 생성
     public void setInitPoint(int memberId, int point) {
 
-        if (point < 0)
-            System.out.println("초기 포인트는 음수일 수 없습니다.");
+        if (point < 0) System.out.println("초기 포인트는 음수일 수 없습니다.");
 
         resultBalances.put(memberId, point);
-
 
     }
 
@@ -73,49 +71,59 @@ public class PointService {
     /// 포인트 사용/적립 ->> 내역 추가
     private void addHistory(int memberId, String paymentId, int amount, PointType pointType) {
 
-        Point point = new Point(pointType, amount, paymentId, memberId);
+        Point point = new Point(memberId, paymentId, amount, pointType);
         pointHistories.add(point);  /// 포인트 사용 내역 추가.
     }
 
-    /// 포인트 내역 조회
-    public void showPoint(int memberId) {
-
-        System.out.println("\n===== 내 포인트 조회 =====");
-        System.out.println("현재 포인트: " + getBalance(memberId));
-        boolean found = false;
-
-        for (Point pointHistory : pointHistories) {
-
-            if (pointHistory.getMemberId() == memberId) {
-                found = true;
-                System.out.println("=== 포인트 사용 내역 ====");
-                System.out.println("결제 번호: " + pointHistory.getPaymentId());
-                System.out.println("결제 유형: " + pointHistory.getType());
-                System.out.println("포인트 금액: " + pointHistory.getAmount());
-                System.out.println("포인트 이용 날짜: " + pointHistory.getCreatedAt());
-
-            }
-        }
-        if (!found)
-            System.out.println("포인트 이용 내역이 없습니다.");
-        System.out.println("=========================");
-
-    }
-
-
     /// 환불 시 사용 포인트 반환
-    public void restorePoint(int memberId, String paymentId) {
+    public int restorePoint(int memberId, String paymentId) {
+
+        ///이미 반환된 결제인지 확인 ->> 환불 내역 존재 -> true
+        boolean alreadyRestored = pointHistories.stream()
+                .anyMatch(point -> point.getMemberId() == memberId && point.getPaymentId().equals(paymentId) && point.getType() == PointType.RESTORE);
+
+        if (alreadyRestored) {
+            System.out.println("이미 반환된 포인트 입니다.");
+        }
+
 
         int result = 0;
-        for (Point pointHistory : pointHistories) {
+        result = pointHistories.stream()
+                .filter(point -> point.getMemberId() == memberId)
+                .filter(point -> point.getPaymentId().equals(paymentId))
+                .filter(point -> point.getType() == PointType.USE)
+                .mapToInt(point -> point.getAmount()).sum();
 
-            if (pointHistory.getPaymentId().equals(paymentId)) {    /// 해당 포인트 내역 찾기
-                result += pointHistory.getAmount();
-            }
-
+        if (result <= 0) {
+            return 0;
         }
+
         resultBalances.put(memberId, getBalance(memberId) + result); /// 환불 포인트 값 반환.
+
+        Point history = new Point(memberId, paymentId, result, PointType.RESTORE);
+        pointHistories.add(history); /// 기록 저장.
+
+        return result;
     }
 
-    /// 환불 시 적립 포인트 회수
+    /// 회원별 포인트 내역 조회
+    public List<Point> getPointHistories(int memberId) {
+
+        return pointHistories.stream()
+                .filter(point -> point.getMemberId() == memberId)
+                .toList();   /// 해당 값 리스트 반환.
+    }
+
+
+    /// 결제번호별 포인트 내역 조회
+    public List<Point> getPaymentPointHistories(int memberId, String paymentId) {
+
+        return pointHistories.stream()
+                .filter(point -> point.getMemberId() == memberId)
+                .filter(point -> point.getPaymentId().equals(paymentId))
+                .toList(); /// 해당 값 리스트 반환.
+
+
+    }
+
 }

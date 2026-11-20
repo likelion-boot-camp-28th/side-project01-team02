@@ -114,6 +114,8 @@ public class Application {
                     }else {
                         runAdminMenu(inputView, outputView, movieController, scheduleController);                    }
                 }
+                case "6" -> movieController.showMovies();
+                case "7" -> movieController.showMovieDetail();
                 default -> outputView.printError(ErrorMessage.INVALID_MENU.getMessage());
             }
 

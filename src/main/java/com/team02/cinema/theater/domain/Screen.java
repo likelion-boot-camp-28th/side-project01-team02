@@ -1,59 +1,71 @@
 package com.team02.cinema.theater.domain;
 
-import com.team02.cinema.movie.domain.schedule.Schedule;
-
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.IntStream;
 
 public class Screen {
+    private static final Pattern SEAT_NAME = Pattern.compile("([A-Za-z])(\\d{1,2})");
+
+    private final int num;
     private final int row;
     private final int col;
-    private final Map<Schedule, List<List<Seat>>> seats;
+    private final List<List<Seat>> seats;
 
-    public Screen(int row, int col){
+    public Screen(int num, int row, int col){
         if (row < 1 || col < 1) {
             throw new IllegalArgumentException("잘못된 좌석 크기입니다.");
         }
+        this.num = num;
         this.row = row;
         this.col = col;
-        seats = new HashMap<>();
+        this.seats = createSeats();
     }
 
-    private List<List<Seat>> initializeSeats() {
+    public List<List<Seat>> createSeats() {
         return IntStream.range(0, row)
-                .mapToObj(i -> IntStream.range(0, col).mapToObj(j -> new Seat(i, j)).toList())
+                .mapToObj(i -> IntStream.range(0, col).mapToObj(j -> {
+                    Seat seat = new Seat(i, j);
+                    if(i == row - 1){
+                        seat.switchPremium();
+                    }
+
+                    return seat;
+
+                }).toList())
                 .toList();
     }
 
-    public void addSchedule(Schedule schedule){
-        if (schedule == null) {
-            throw new IllegalArgumentException("스케줄은 필수입니다.");
-        }
-        if (seats.putIfAbsent(schedule, initializeSeats()) != null) {
-            throw new IllegalArgumentException("이미 등록된 스케줄입니다.");
-        }
+    public List<List<Seat>> getSeats() {
+        return seats;
     }
 
-    public List<List<Seat>> getSeats(Schedule schedule) {
-        return Optional.ofNullable(seats.get(schedule))
-                .orElseThrow(() -> new IllegalArgumentException("등록되지 않은 스케줄입니다."));
-    }
-
-    public Seat getSeat(Schedule schedule, int row, int col) {
+    public Seat getSeat(int row, int col) {
         if (row < 0 || row >= this.row || col < 0 || col >= this.col) {
             throw new IllegalArgumentException("존재하지 않는 좌석입니다.");
         }
-        return getSeats(schedule).get(row).get(col);
+        return seats.get(row).get(col);
     }
 
-    public List<Seat> getAvailableSeats(Schedule schedule) {
-        return getSeats(schedule).stream()
-                .flatMap(List::stream)
-                .filter(seat -> !seat.isReserved())
-                .toList();
+    public Seat getSeat(String name) {
+        Matcher matcher = SEAT_NAME.matcher(name == null ? "" : name.trim());
+        if (!matcher.matches()) {
+            throw new IllegalArgumentException("좌석 번호 형식이 올바르지 않습니다. 예) A3");
+        }
+        return getSeat(Character.toUpperCase(matcher.group(1).charAt(0)) - 'A', Integer.parseInt(matcher.group(2)) - 1);
+    }
+
+    public int getNum() {
+        return num;
+    }
+
+    public int getRow() {
+        return row;
+    }
+
+    public int getCol() {
+        return col;
     }
 
     @Override

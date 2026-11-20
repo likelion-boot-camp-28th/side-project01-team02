@@ -1,12 +1,18 @@
 package com.team02.cinema.theater.view;
 
 import com.team02.cinema.theater.domain.Seat;
-import com.team02.cinema.theater.service.TheaterService;
+import com.team02.cinema.theater.domain.Screen;
 
+import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 public class TheaterView {
     public void printSeats(List<List<Seat>> seats){
+        printSeats(seats, Set.of());
+    }
+
+    public void printSeats(List<List<Seat>> seats, Set<Seat> reserved){
         StringBuilder header = new StringBuilder("  ");
         for(int i = 1; i <= seats.getFirst().size(); i++){
             header.append(" ").append(i).append(" ");
@@ -20,7 +26,7 @@ public class TheaterView {
 
         for(int i = 0; i < seats.size(); i++){
             StringBuilder line = new StringBuilder((char)(i + 'A') + " ");
-            seats.get(i).forEach(seat -> line.append(seat.isReserved() ? "[X]" : "[ ]"));
+            seats.get(i).forEach(seat -> line.append(reserved.contains(seat) ? "[X]" : seat.isPremium() ? "[P]" : "[ ]"));
             System.out.println(line);
         }
     }
@@ -29,7 +35,7 @@ public class TheaterView {
         System.out.println(seat);
     }
 
-    public void printScreens(TheaterService theater){
-        theater.getScreens().forEach((num, screen) -> System.out.println(num + "관 | " + screen));
+    public void printScreens(Collection<Screen> screens){
+        screens.forEach(screen -> System.out.println(screen.getNum() + "관 | " + screen));
     }
 }

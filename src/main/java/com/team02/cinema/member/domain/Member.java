@@ -39,4 +39,12 @@ public class Member {
     public String getName() {
         return name;
     }
+
+    public int getPoint() {
+        return point;
+    }
+
+    public long getId() {
+        return id;
+    }
 }

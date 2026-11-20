@@ -4,6 +4,7 @@ import com.team02.cinema.member.domain.Member;
 import com.team02.cinema.member.service.MemberService;
 
 import java.time.LocalDate;
+import java.util.Optional;
 
 public class MemberController {
     private final MemberService memberService;
@@ -40,5 +41,9 @@ public class MemberController {
         } catch (IllegalArgumentException e) {
             System.out.println(e.getMessage());
         }
+    }
+
+    public Optional<Member> getLoginMember(){
+        return Optional.ofNullable(loginMember);
     }
 }

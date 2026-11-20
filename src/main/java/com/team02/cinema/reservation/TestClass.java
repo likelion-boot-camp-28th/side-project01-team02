@@ -7,7 +7,8 @@ import com.team02.cinema.movie.domain.Movie.Movie;
 import com.team02.cinema.movie.domain.schedule.Schedule;
 import com.team02.cinema.reservation.domain.Reservation;
 import com.team02.cinema.reservation.repository.MemoryReservationRepository;
-import com.team02.cinema.reservation.repository.ReservationRepository;
+import com.team02.cinema.reservation.service.ReservationService;
+import com.team02.cinema.theater.domain.Screen;
 import com.team02.cinema.theater.domain.Seat;
 import com.team02.cinema.theater.service.TheaterService;
 import com.team02.cinema.theater.view.TheaterView;
@@ -20,53 +21,43 @@ public class TestClass {
     public static void main(String[] args) {
         TheaterService theater = new TheaterService();
         TheaterView view = new TheaterView();
+        ReservationService service = new ReservationService(new MemoryReservationRepository());
         theater.addScreen(1, 5, 6);
+        Screen screen = theater.getScreen(1);
 
         Movie movie = new Movie(1L, "테스트 영화", Genre.ACTION, 120, AgeRating.ALL, LocalDate.now());
-        Schedule schedule = new Schedule(1L, movie, theater.getScreen(1), LocalDateTime.now(), 10000);
+        LocalDateTime now = LocalDateTime.now();
+        Schedule morning = new Schedule(1L, movie, screen, now, 10000);
+        Schedule evening = new Schedule(2L, movie, screen, now.plusHours(6), 10000);
         Member member = new Member("test", "1234", "홍길동", LocalDate.of(2000, 1, 1));
 
-        title("1. 좌석 선택 후 예약 생성 (C5, C6)");
-        List<Seat> seats = List.of(theater.getSeat(schedule, 2, 4), theater.getSeat(schedule, 2, 5));
-        seats.forEach(seat -> seat.reserve());
-        Reservation reservation = new Reservation(1L, member, schedule, seats);
-        printReservation(reservation);
-        view.printSeats(theater.getSeats(schedule));
-
-        title("2. 저장소 저장 - 아이디 없는 예약에 번호가 붙는지 확인");
-        ReservationRepository repository = new MemoryReservationRepository();
-        Reservation unsaved = new Reservation(null, member, schedule, seats);
-        System.out.println("저장 전 id : " + unsaved.getId());
-        Reservation saved1 = repository.save(unsaved);
-        Reservation saved2 = repository.save(new Reservation(null, member, schedule, seats));
-        System.out.println("저장 후 id : " + saved1.getId() + ", " + saved2.getId());
-        System.out.println("전체 조회 : " + repository.findAll().size() + "건");
-        System.out.println("id=2 조회 : " + repository.findById(2L).isPresent());
-        System.out.println("id=9 조회 : " + repository.findById(9L).isPresent());
-        Member other = new Member("other", "1234", "김철수", LocalDate.of(1999, 1, 1));
-        System.out.println("test 회원 예약 : " + repository.findByMember(member).size() + "건");
-        System.out.println("other 회원 예약 : " + repository.findByMember(other).size() + "건");
-        System.out.println("id=1 삭제 : " + repository.deleteById(1L));
-        System.out.println("id=1 재삭제 : " + repository.deleteById(1L));
-        System.out.println("삭제 후 전체 조회 : " + repository.findAll().size() + "건");
-        System.out.println("새 저장 id (번호 재사용 안 됨) : " + repository.save(unsaved).getId());
-
-        title("3. 좌석 목록 수정 불가 확인");
-        expectError("getSeats().add()", () -> reservation.getSeats().add(new Seat(0, 0)));
-
-        title("4. 입력 검증");
-        expectError("회원 null", () -> new Reservation(1L, null, schedule, seats));
-        expectError("스케줄 null", () -> new Reservation(1L, member, null, seats));
-        expectError("좌석 null", () -> new Reservation(1L, member, schedule, null));
-        expectError("좌석 비어 있음", () -> new Reservation(1L, member, schedule, List.of()));
-    }
-
-    private static void printReservation(Reservation reservation) {
+        title("1. 오전 회차 C5, C6 예약");
+        Reservation reservation = service.reserve(member, morning, List.of(screen.getSeat(2, 4), screen.getSeat(2, 5)));
         System.out.println("예약번호 : " + reservation.getId());
-        System.out.println("회원     : " + reservation.getMember().getLoginId());
-        System.out.print("좌석     : ");
-        reservation.getSeats().forEach(seat -> System.out.print(seat.getName() + " "));
-        System.out.println();
+        view.printSeats(screen.getSeats(), service.getReservedSeats(morning));
+        System.out.println("빈 좌석 수 : " + service.getAvailableSeats(morning).size());
+
+        title("2. 같은 좌석, 저녁 회차는 영향 없음");
+        view.printSeats(screen.getSeats(), service.getReservedSeats(evening));
+        System.out.println("빈 좌석 수 : " + service.getAvailableSeats(evening).size());
+
+        title("3. 예약 취소 후 좌석 반환");
+        service.cancel(reservation.getId());
+        view.printSeats(screen.getSeats(), service.getReservedSeats(morning));
+        System.out.println("빈 좌석 수 : " + service.getAvailableSeats(morning).size());
+
+        title("4. 예외 상황");
+        service.reserve(member, morning, List.of(screen.getSeat(0, 0)));
+        expectError("이미 예약된 좌석(A1) 재예약", () -> service.reserve(member, morning, List.of(screen.getSeat(0, 0))));
+        expectError("같은 좌석 중복 선택", () -> service.reserve(member, morning, List.of(screen.getSeat(1, 1), screen.getSeat(1, 1))));
+        expectError("다른 상영관 좌석", () -> {
+            theater.addScreen(2, 3, 3);
+            service.reserve(member, morning, List.of(theater.getScreen(2).getSeat(0, 0)));
+        });
+        expectError("없는 예약 취소", () -> service.cancel(99L));
+        expectError("회원 null", () -> service.reserve(null, morning, List.of(screen.getSeat(3, 3))));
+        expectError("좌석 비어 있음", () -> service.reserve(member, morning, List.of()));
+        expectError("좌석 목록 수정", () -> reservation.getSeats().add(new Seat(0, 0)));
     }
 
     private static void title(String text) {

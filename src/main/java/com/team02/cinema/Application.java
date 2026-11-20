@@ -22,6 +22,8 @@ public class Application {
             System.out.println("2. 로그인");
             System.out.println("3. 로그아웃");
             System.out.println("0. 종료");
+            System.out.print("번호를 입력하세요 : ");
+
             String choice = sc.nextLine();
 
             switch (choice){
@@ -37,8 +39,12 @@ public class Application {
                     memberController.login(loginId,password);
                 }
                 case "3" -> {
-                    memberController.logout();
-                    System.out.println("로그아웃되었습니다.");
+                    if (memberController.getLoginMember().isEmpty()){
+                        System.out.println("로그인 상태가 아닙니다.");
+                    }else{
+                        memberController.logout();
+                        System.out.println("로그아웃되었습니다.");
+                    }
                 }
                 default -> System.out.println("잘못입력하셨습니다.");
             }

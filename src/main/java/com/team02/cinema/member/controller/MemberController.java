@@ -1,5 +1,6 @@
 package com.team02.cinema.member.controller;
 
+import com.team02.cinema.common.view.OutputView;
 import com.team02.cinema.member.domain.Member;
 import com.team02.cinema.member.service.MemberService;
 
@@ -9,9 +10,13 @@ import java.util.Optional;
 public class MemberController {
     private final MemberService memberService;
     private Member loginMember;
+    private final OutputView outputView;
 
-    public MemberController(MemberService memberService) {
+
+
+    public MemberController(MemberService memberService, OutputView outputView) {
         this.memberService = memberService;
+        this.outputView = outputView;
     }
 
     public void logout(){
@@ -28,18 +33,18 @@ public class MemberController {
     public void login(String loginId, String password){
         try {
             loginMember = memberService.login(loginId, password);
-            System.out.println(loginMember.getName() + "님, 환영합니다!");
+            outputView.printWelcome(loginMember.getName());
         } catch (IllegalArgumentException e) {
-            System.out.println(e.getMessage());
+            outputView.printError(e.getMessage());
         }
     }
 
     public void signUp(String loginId, String password, String name, LocalDate birthDate){
         try {
             memberService.signUp(loginId, password, name, birthDate);
-            System.out.println("회원가입 되었습니다!");
+            outputView.printSignUpSuccess();
         } catch (IllegalArgumentException e) {
-            System.out.println(e.getMessage());
+            outputView.printError(e.getMessage());
         }
     }
 

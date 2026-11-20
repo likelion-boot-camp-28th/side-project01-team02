@@ -42,7 +42,7 @@ public class ScheduleOutputView {
                 + schedule.getScreen().getNum() + "관 | "
                 + schedule.getStartTime().toLocalDate() + " "
                 + schedule.getStartTime().toLocalTime() + " ~ "
-                + schedule.getEndTime().toLocalTime() + " | "
+                + schedule.getMovieEndTime().toLocalTime() + " | " // 청소 시간을 뺀 영화 종료 시각
                 + schedule.getBasePrice() + "원";
     }
 }

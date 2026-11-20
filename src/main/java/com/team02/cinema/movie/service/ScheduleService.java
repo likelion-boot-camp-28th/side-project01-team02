@@ -7,6 +7,8 @@ import com.team02.cinema.movie.repository.ScheduleRepository;
 import com.team02.cinema.theater.domain.Screen;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 public class ScheduleService {
@@ -39,13 +41,15 @@ public class ScheduleService {
                 .findFirst()
                 .ifPresent(existing -> {
                     // 날짜와 시각을 나눠서 붙임 (LocalDateTime을 그대로 붙이면 사이에 'T'가 출력됨)
-                    // 예: 상영 시간이 기존 스케줄과 겹칩니다. (6번 범죄도시, 2026-11-21 13:00 ~ 15:11)
+                    // 목록과 같은 영화 종료 시각을 보여주고, 실제로 막히는 이유인 청소 종료 시각을 함께 알려줌
+                    // 예: 상영 시간이 기존 스케줄과 겹칩니다. (6번 범죄도시, 2026-11-21 13:00 ~ 15:01, 청소 시간 포함 15:11까지 사용)
                     throw new IllegalStateException(
                             "상영 시간이 기존 스케줄과 겹칩니다. ("
                                     + existing.getId() + "번 " + existing.getMovie().getTitle() + ", "
                                     + existing.getStartTime().toLocalDate() + " "
                                     + existing.getStartTime().toLocalTime() + " ~ "
-                                    + existing.getEndTime().toLocalTime() + ")");
+                                    + existing.getMovieEndTime().toLocalTime() + ", 청소 시간 포함 "
+                                    + existing.getEndTime().toLocalTime() + "까지 사용)");
                 });
 
         return scheduleRepository.save(newSchedule);
@@ -62,13 +66,31 @@ public class ScheduleService {
         scheduleRepository.deleteById(id);
     }
 
-    // 전체 스케줄 목록
+    // 전체 스케줄 목록 (관리자용): 지난 상영도 확인·삭제할 수 있도록 모두 보여주고 시간순 정렬만 한다
     public List<Schedule> findAllSchedules() {
-        return scheduleRepository.findAll();
+        return sortByStartTime(scheduleRepository.findAll());
     }
 
-    // 영화 상세 조회
-    public List<Schedule> findSchedulesByMovie(Long movieId) {
-        return scheduleRepository.findByMovieId(movieId);
+    // 영화 상세 조회 (사용자용): 아직 시작하지 않은 상영만 시간순으로 보여준다
+    public List<Schedule> findUpcomingSchedulesByMovie(Long movieId) {
+        LocalDateTime now = LocalDateTime.now();
+
+        List<Schedule> upcoming = new ArrayList<>();
+        for (Schedule schedule : scheduleRepository.findByMovieId(movieId)) {
+            // 시작 시각이 지금보다 뒤인 상영만 담는다 (이미 시작한 상영은 예매할 수 없으므로 제외)
+            if (schedule.getStartTime().isAfter(now)) {
+                upcoming.add(schedule);
+            }
+        }
+        return sortByStartTime(upcoming);
+    }
+
+    // 시작 시각이 빠른 순으로 정렬, 시작 시각이 같으면 상영관 번호가 작은 순
+    private List<Schedule> sortByStartTime(List<Schedule> schedules) {
+        // Repository가 준 목록은 수정할 수 없을 수 있어서 새 리스트에 복사한 뒤 정렬
+        List<Schedule> sorted = new ArrayList<>(schedules);
+        sorted.sort(Comparator.comparing(Schedule::getStartTime)
+                .thenComparingInt(schedule -> schedule.getScreen().getNum()));
+        return sorted;
     }
 }

@@ -55,9 +55,10 @@ public class MovieController {
             Movie movie = movieService.findMovie(id);
             outputView.printMovieDetail(movie);
 
-            List<Schedule> schedules = scheduleService.findSchedulesByMovie(id);
+            // 아직 시작하지 않은 상영만 시간순으로 가져옴
+            List<Schedule> schedules = scheduleService.findUpcomingSchedulesByMovie(id);
             if (schedules.isEmpty()) {
-                System.out.println("상영 스케줄이 없습니다.");
+                System.out.println("예매 가능한 상영 스케줄이 없습니다.");
                 return;
             }
 

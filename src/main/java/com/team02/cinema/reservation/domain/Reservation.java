@@ -4,6 +4,7 @@ import com.team02.cinema.member.domain.Member;
 import com.team02.cinema.movie.domain.schedule.Schedule;
 import com.team02.cinema.theater.domain.Seat;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 public class Reservation {
@@ -12,18 +13,21 @@ public class Reservation {
     private final Schedule schedule;
     private final List<Seat> seats;
     private ReservationStatus status;
+    private final LocalDateTime reservedAt;
 
     public Reservation(Long id, Member member, Schedule schedule, List<Seat> seats){
-        this(id, member, schedule, seats, ReservationStatus.PENDING);
+        this(id, member, schedule, seats, ReservationStatus.PENDING, LocalDateTime.now());
     }
 
-    public Reservation(Long id, Member member, Schedule schedule, List<Seat> seats, ReservationStatus status){
+    public Reservation(Long id, Member member, Schedule schedule, List<Seat> seats,
+                       ReservationStatus status, LocalDateTime reservedAt){
         validate(member, schedule, seats);
         this.id = id;
         this.member = member;
         this.schedule = schedule;
         this.seats = List.copyOf(seats);
         this.status = status;
+        this.reservedAt = reservedAt;
     }
 
     private void validate(Member member, Schedule schedule, List<Seat> seats){
@@ -58,6 +62,10 @@ public class Reservation {
 
     public ReservationStatus getStatus() {
         return status;
+    }
+
+    public LocalDateTime getReservedAt() {
+        return reservedAt;
     }
 
     public Long getId() {

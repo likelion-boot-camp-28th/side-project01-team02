@@ -64,13 +64,24 @@ public class ReservationService {
         getReservation(id).confirm();
     }
 
-    public void cancel(Long id){
+    public void cancelBySystem(Long id){
+        getReservation(id).cancel();
+    }
+
+    public void cancel(Member member, Long id){
         Reservation reservation = getReservation(id);
+        if (!reservation.getMember().getLoginId().equals(member.getLoginId())) {
+            throw new IllegalArgumentException("본인의 예매만 취소할 수 있습니다.");
+        }
         LocalDateTime limit = reservation.getSchedule().getStartTime().minusMinutes(CANCEL_LIMIT_MINUTES);
         if (reservation.isActive() && LocalDateTime.now().isAfter(limit)) {
             throw new IllegalStateException("상영 시작 " + CANCEL_LIMIT_MINUTES + "분 전까지만 취소할 수 있습니다.");
         }
         reservation.cancel();
+    }
+
+    public boolean hasReservation(Long scheduleId){
+        return reservationRepository.findByScheduleId(scheduleId).stream().anyMatch(Reservation::isActive);
     }
 
     public Set<Seat> getReservedSeats(Schedule schedule){

@@ -1,8 +1,10 @@
 package com.team02.cinema.payment.repository;
 
-import java.time.LocalDateTime;
 
-public class Point {
+import java.time.LocalDateTime;
+import java.util.Objects;
+
+public class Point  {
 
 
     // 포인트를 소유한 회원번호
@@ -24,13 +26,45 @@ public class Point {
     // 포인트 처리 날짜 및 시간
     private LocalDateTime createdAt;
 
+    public int getMemberId() {
+        return memberId;
+    }
 
-    public Point(PointType type, int amount, String paymentId, int memberId) {
+    public String getPaymentId() {
+        return paymentId;
+    }
+
+    public int getAmount() {
+        return amount;
+    }
+
+    public PointType getType() {
+        return type;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public Point(int memberId, String paymentId, int amount, PointType type) {
         this.type = type;
         this.amount = amount;
         this.paymentId = paymentId;
         this.memberId = memberId;
     }
+
+    @Override
+    public boolean equals(Object object) {
+        if (object == null || getClass() != object.getClass()) return false;
+        Point point = (Point) object;
+        return memberId == point.memberId && amount == point.amount && Objects.equals(paymentId, point.paymentId) && type == point.type && Objects.equals(createdAt, point.createdAt);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(memberId, paymentId, amount, type, createdAt);
+    }
+
 
 
 }

@@ -1,6 +1,7 @@
 package com.team02.cinema.payment.repository;
 
 import java.time.LocalDateTime;
+import java.util.Objects;
 
 public class Payment {
 
@@ -49,16 +50,17 @@ public class Payment {
 
     // 결제 수단
     // 예: "신용 / 체크카드", "계좌이체"
-    private final String paymentMethod;
+    private final PaymentType.BankType paymentMethod;
 
     // 실제 결제를 완료한 날짜와 시간
     private final LocalDateTime paidAt;
 
     // 현재 결제 상태
-    // 예: "결제 완료", "환불 완료"
+    // 예: "결제 완료", "환불 완료" (false)
     private boolean refunded;
 
-    public Payment(String paymentId, Integer couponId, int originalAmount, int couponDiscount, int usedPoints, int finalAmount, int earnedPoints, int remainingPoints, String paymentMethod, LocalDateTime paidAt) {
+    public Payment(String paymentId, Integer couponId, int originalAmount, int couponDiscount, int usedPoints
+            , int finalAmount, int earnedPoints, int remainingPoints, PaymentType.BankType paymentMethod) {
         this.paymentId = paymentId;
         this.couponId = couponId;
         this.originalAmount = originalAmount;
@@ -68,23 +70,33 @@ public class Payment {
         this.earnedPoints = earnedPoints;
         this.remainingPoints = remainingPoints;
         this.paymentMethod = paymentMethod;
-        this.paidAt = paidAt;
+        this.paidAt = LocalDateTime.now();
     }
 
 
-//    public String getPaymentId() { return paymentId; }
+    public String getPaymentId() { return paymentId; }
 //    public Reservation getReservation() { return reservation; }
-//    public Integer getCouponId() { return couponId; }
-//    public int getOriginalAmount() { return originalAmount; }
-//    public int getCouponDiscount() { return couponDiscount; }
-//    public int getUsedPoints() { return usedPoints; }
-//    public int getFinalAmount() { return finalAmount; }
-//    public int getEarnedPoints() { return earnedPoints; }
-//    public int getRemainingPoints() { return remainingPoints; }
-//    public String getPaymentMethod() { return paymentMethod; }
-//    public LocalDateTime getPaidAt() { return paidAt; }
-//    public boolean isRefunded() { return refunded; }
-//    public String getStatus() { return refunded ? "환불 완료" : "결제 완료"; }
+    public Integer getCouponId() { return couponId; }
+    public int getOriginalAmount() { return originalAmount; }
+    public int getCouponDiscount() { return couponDiscount; }
+    public int getUsedPoints() { return usedPoints; }
+    public int getFinalAmount() { return finalAmount; }
+    public int getEarnedPoints() { return earnedPoints; }
+    public int getRemainingPoints() { return remainingPoints; }
+    public PaymentType.BankType getPaymentMethod() { return paymentMethod; }
+    public LocalDateTime getPaidAt() { return paidAt; }
+    public boolean isRefunded() { return refunded; }
+    public String getStatus() { return refunded ? "환불 완료" : "결제 완료"; }
 
+    @Override
+    public boolean equals(Object object) {
+        if (object == null || getClass() != object.getClass()) return false;
+        Payment payment = (Payment) object;
+        return originalAmount == payment.originalAmount && couponDiscount == payment.couponDiscount && usedPoints == payment.usedPoints && finalAmount == payment.finalAmount && earnedPoints == payment.earnedPoints && remainingPoints == payment.remainingPoints && refunded == payment.refunded && Objects.equals(paymentId, payment.paymentId) && Objects.equals(couponId, payment.couponId) && paymentMethod == payment.paymentMethod && Objects.equals(paidAt, payment.paidAt);
+    }
 
+    @Override
+    public int hashCode() {
+        return Objects.hash(paymentId, couponId, originalAmount, couponDiscount, usedPoints, finalAmount, earnedPoints, remainingPoints, paymentMethod, paidAt, refunded);
+    }
 }

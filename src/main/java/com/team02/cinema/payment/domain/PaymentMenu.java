@@ -1,15 +1,11 @@
 package com.team02.cinema.payment.domain;
 
-import com.team02.cinema.payment.repository.Payment;
-import com.team02.cinema.payment.repository.Coupon;
+
+import com.team02.cinema.payment.controller.CouponController;
+import com.team02.cinema.payment.controller.PaymentController;
 import com.team02.cinema.payment.service.CouponService;
 import com.team02.cinema.payment.service.PaymentService;
-import com.team02.cinema.payment.service.PointService;
 
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.util.List;
-import java.util.Locale;
 import java.util.Scanner;
 
 public class PaymentMenu {
@@ -17,8 +13,8 @@ public class PaymentMenu {
     private static final int DEMO_MEMBER_ID = 1;
 
     public static void main(String[] args) {
-        CouponService coupons = new CouponService();
-        PointService points = new PointService();
+        CouponController coupons = new CouponController(new CouponService());
+        PaymentController points = new PaymentController();
 
         Scanner sc = new Scanner(System.in);
 

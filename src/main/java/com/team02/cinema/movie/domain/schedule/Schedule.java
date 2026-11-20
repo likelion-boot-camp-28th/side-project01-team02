@@ -59,9 +59,14 @@ public class Schedule {
         return basePrice;
     }
 
-    // 이 회차가 상영관을 비워 주는 시각 (시작 + 상영시간 + 청소 시간)
+    // 영화가 끝나는 시각 (시작 + 상영시간) - 사용자에게 보여주는 종료 시각
+    public LocalDateTime getMovieEndTime() {
+        return startTime.plusMinutes(movie.getRunningTime());
+    }
+
+    // 이 회차가 상영관을 비워 주는 시각 (시작 + 상영시간 + 청소 시간) - 스케줄 겹침 검사용
     public LocalDateTime getEndTime() {
-        return startTime.plusMinutes(movie.getRunningTime() + CLEANING_MINUTES);
+        return getMovieEndTime().plusMinutes(CLEANING_MINUTES);
     }
 
     // 두 회차의 시작, 종료 구간이 겹치는지 판단 - 1의 종료시각과 2의 시작 시작이 같다면 겹치지 않는 것으로 보겠습니다.

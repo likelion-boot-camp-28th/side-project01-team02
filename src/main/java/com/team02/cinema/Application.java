@@ -1,6 +1,7 @@
 package com.team02.cinema;
 
 import com.team02.cinema.common.view.InputView;
+import com.team02.cinema.common.view.OutputView;
 import com.team02.cinema.member.controller.MemberController;
 import com.team02.cinema.member.repository.MemberRepository;
 import com.team02.cinema.member.repository.MemoryMemberRepository;
@@ -16,19 +17,16 @@ public class Application {
         MemberService memberService = new MemberService(memberRepository);
         MemberController memberController = new MemberController(memberService);
         InputView inputView = new InputView();
-
+        OutputView outputView = new OutputView();
 
         boolean running = true;
         while(running){
-            System.out.println("1. 회원가입");
-            System.out.println("2. 로그인");
-            System.out.println("3. 로그아웃");
-            System.out.println("0. 종료");
+            outputView.printMenu();
             String choice = inputView.readMenu();
 
             switch (choice){
                 case "0" -> {
-                    System.out.println("시스템이 종료됩니다.");
+                    outputView.printExit();
                     running = false;
                 }
                 case "1" -> {
@@ -39,7 +37,7 @@ public class Application {
                         LocalDate birth = inputView.readBirthDate();
                         memberController.signUp(id,password,name,birth);
                     } catch (DateTimeParseException e) {
-                        System.out.println("생년월일 형식이 올바르지 않습니다. (예 : 2000-01-15)");
+                        outputView.printInvalidBirthDate();
                     }
                 }
                 case "2" -> {
@@ -49,13 +47,13 @@ public class Application {
                 }
                 case "3" -> {
                     if (memberController.getLoginMember().isEmpty()){
-                        System.out.println("로그인 상태가 아닙니다.");
+                        outputView.printNotLoggedIn();
                     }else{
                         memberController.logout();
-                        System.out.println("로그아웃되었습니다.");
+                        outputView.printLogout();
                     }
                 }
-                default -> System.out.println("잘못입력하셨습니다.");
+                default -> outputView.printInvalidMenu();
             }
 
         }

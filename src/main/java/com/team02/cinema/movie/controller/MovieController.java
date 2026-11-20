@@ -3,9 +3,13 @@ package com.team02.cinema.movie.controller;
 import com.team02.cinema.movie.domain.Movie.AgeRating;
 import com.team02.cinema.movie.domain.Movie.Genre;
 import com.team02.cinema.movie.domain.Movie.Movie;
+import com.team02.cinema.movie.domain.schedule.Schedule;
 import com.team02.cinema.movie.service.MovieService;
+import com.team02.cinema.movie.service.ScheduleService;
 import com.team02.cinema.movie.view.MovieInputView;
 import com.team02.cinema.movie.view.MovieOutputView;
+import com.team02.cinema.movie.view.ScheduleOutputView;
+import com.team02.cinema.reservation.service.ReservationService;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -15,19 +19,58 @@ import java.util.List;
 public class MovieController {
 
     private final MovieService movieService;
+    // 영화 상세에서 그 영화의 스케줄 목록을 보여주기 위해 사용
+    private final ScheduleService scheduleService;
+    // 영화 상세에서 스케줄별 잔여 좌석 수를 구하기 위해 사용
+    private final ReservationService reservationService;
     private final MovieInputView inputView;
     private final MovieOutputView outputView;
+    private final ScheduleOutputView scheduleOutputView;
 
-    public MovieController(MovieService movieService, MovieInputView inputView, MovieOutputView outputView) {
+    public MovieController(MovieService movieService, ScheduleService scheduleService,
+                           ReservationService reservationService,
+                           MovieInputView inputView, MovieOutputView outputView,
+                           ScheduleOutputView scheduleOutputView) {
         this.movieService = movieService;
+        this.scheduleService = scheduleService;
+        this.reservationService = reservationService;
         this.inputView = inputView;
         this.outputView = outputView;
+        this.scheduleOutputView = scheduleOutputView;
     }
 
     // 영화 목록 조회
     public void showMovies() {
         List<Movie> movies = movieService.findAllMovies();
         outputView.printMovieList(movies);
+    }
+
+    // 영화 상세 조회: 영화 정보 + 그 영화의 상영 스케줄 목록(잔여 좌석 수 포함)
+    public void showMovieDetail() {
+        // 번호를 고르기 쉽게 목록을 먼저 보여줌
+        showMovies();
+
+        try {
+            Long id = inputView.readMovieId();
+            Movie movie = movieService.findMovie(id);
+            outputView.printMovieDetail(movie);
+
+            List<Schedule> schedules = scheduleService.findSchedulesByMovie(id);
+            if (schedules.isEmpty()) {
+                System.out.println("상영 스케줄이 없습니다.");
+                return;
+            }
+
+            scheduleOutputView.printDetailScheduleHeader();
+            for (Schedule schedule : schedules) {
+                // 예약되지 않은 좌석 목록의 개수 = 잔여 좌석 수
+                int availableSeats = reservationService.getAvailableSeats(schedule).size();
+                scheduleOutputView.printScheduleWithSeats(schedule, availableSeats);
+            }
+        } catch (IllegalArgumentException e) {
+            // 숫자가 아닌 입력, 없는 영화
+            System.out.println(e.getMessage());
+        }
     }
 
     // 영화 등록 (관리자)

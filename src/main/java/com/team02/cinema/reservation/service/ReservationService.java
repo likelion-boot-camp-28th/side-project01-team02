@@ -30,6 +30,15 @@ public class ReservationService {
         return reservationRepository.save(reservation);
     }
 
+    public Reservation getReservation(Long id){
+        return reservationRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 예약입니다."));
+    }
+
+    public List<Reservation> getMemberReservations(Member member){
+        return reservationRepository.findByMember(member);
+    }
+
     public void cancel(Long id){
         if (!reservationRepository.deleteById(id)) {
             throw new IllegalArgumentException("존재하지 않는 예약입니다.");

@@ -46,7 +46,14 @@ public class TestClass {
         view.printSeats(screen.getSeats(), service.getReservedSeats(morning));
         System.out.println("빈 좌석 수 : " + service.getAvailableSeats(morning).size());
 
-        title("4. 예외 상황");
+        title("4. 예약 조회");
+        service.reserve(member, evening, List.of(screen.getSeat(1, 0)));
+        Member other = new Member("other", "1234", "김철수", LocalDate.of(1999, 1, 1));
+        System.out.println("test 회원 예약 : " + service.getMemberReservations(member).size() + "건");
+        System.out.println("other 회원 예약 : " + service.getMemberReservations(other).size() + "건");
+        System.out.println("예약번호 2번 좌석 : " + service.getReservation(2L).getSeats());
+
+        title("5. 예외 상황");
         service.reserve(member, morning, List.of(screen.getSeat(0, 0)));
         expectError("이미 예약된 좌석(A1) 재예약", () -> service.reserve(member, morning, List.of(screen.getSeat(0, 0))));
         expectError("같은 좌석 중복 선택", () -> service.reserve(member, morning, List.of(screen.getSeat(1, 1), screen.getSeat(1, 1))));
@@ -54,6 +61,7 @@ public class TestClass {
             theater.addScreen(2, 3, 3);
             service.reserve(member, morning, List.of(theater.getScreen(2).getSeat(0, 0)));
         });
+        expectError("없는 예약 조회", () -> service.getReservation(99L));
         expectError("없는 예약 취소", () -> service.cancel(99L));
         expectError("회원 null", () -> service.reserve(null, morning, List.of(screen.getSeat(3, 3))));
         expectError("좌석 비어 있음", () -> service.reserve(member, morning, List.of()));

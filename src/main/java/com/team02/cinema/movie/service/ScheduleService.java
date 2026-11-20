@@ -38,9 +38,14 @@ public class ScheduleService {
                 .filter(existing -> existing.overlaps(newSchedule))
                 .findFirst()
                 .ifPresent(existing -> {
+                    // 날짜와 시각을 나눠서 붙임 (LocalDateTime을 그대로 붙이면 사이에 'T'가 출력됨)
+                    // 예: 상영 시간이 기존 스케줄과 겹칩니다. (6번 범죄도시, 2026-11-21 13:00 ~ 15:11)
                     throw new IllegalStateException(
-                            "상영 시간이 기존 스케줄과 겹칩니다. 겹치는 스케줄 id=" + existing.getId()
-                                    + " (" + existing.getStartTime() + " ~ " + existing.getEndTime() + ")");
+                            "상영 시간이 기존 스케줄과 겹칩니다. ("
+                                    + existing.getId() + "번 " + existing.getMovie().getTitle() + ", "
+                                    + existing.getStartTime().toLocalDate() + " "
+                                    + existing.getStartTime().toLocalTime() + " ~ "
+                                    + existing.getEndTime().toLocalTime() + ")");
                 });
 
         return scheduleRepository.save(newSchedule);

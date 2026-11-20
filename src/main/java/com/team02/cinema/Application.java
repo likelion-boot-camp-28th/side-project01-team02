@@ -5,6 +5,7 @@ import com.team02.cinema.common.view.InputView;
 import com.team02.cinema.common.view.OutputView;
 import com.team02.cinema.member.controller.MemberController;
 import com.team02.cinema.member.domain.Member;
+import com.team02.cinema.member.domain.Role;
 import com.team02.cinema.member.repository.MemberRepository;
 import com.team02.cinema.member.repository.MemoryMemberRepository;
 import com.team02.cinema.member.service.MemberService;
@@ -16,6 +17,7 @@ import java.time.format.DateTimeParseException;
 public class Application {
     public static void main(String[] args) {
         MemberRepository memberRepository = new MemoryMemberRepository();
+        memberRepository.save(new Member("admin", "admin1234", "관리자", LocalDate.of(1990,1,1), Role.ADMIN));
         MemberService memberService = new MemberService(memberRepository);
         OutputView outputView = new OutputView();
         MemberController memberController = new MemberController(memberService,outputView);

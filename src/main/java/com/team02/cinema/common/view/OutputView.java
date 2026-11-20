@@ -1,5 +1,8 @@
 package com.team02.cinema.common.view;
 
+import com.team02.cinema.movie.controller.MovieController;
+import com.team02.cinema.movie.controller.ScheduleController;
+
 public class OutputView {
     public void printMenu(){
         System.out.println("1. 회원가입");
@@ -35,8 +38,13 @@ public class OutputView {
         System.out.println("회원가입 되었습니다.");
     }
 
-    public void printAdminMenuEntered(){
-        System.out.println("관리자 메뉴에 진입했습니다.");
+    public void printAdminMenu(){
+        System.out.println("1. 영화 등록");
+        System.out.println("2. 영화 수정");
+        System.out.println("3. 영화 삭제");
+        System.out.println("4. 스케줄 목록");
+        System.out.println("5. 스케줄 등록");
+        System.out.println("6. 스케줄 삭제");
+        System.out.println("0. 이전 메뉴");
     }
-
 }

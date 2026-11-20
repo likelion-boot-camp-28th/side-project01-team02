@@ -9,6 +9,22 @@ import com.team02.cinema.member.domain.Role;
 import com.team02.cinema.member.repository.MemberRepository;
 import com.team02.cinema.member.repository.MemoryMemberRepository;
 import com.team02.cinema.member.service.MemberService;
+import com.team02.cinema.movie.controller.MovieController;
+import com.team02.cinema.movie.controller.ScheduleController;
+import com.team02.cinema.movie.initial.MovieDataInitializer;
+import com.team02.cinema.movie.repository.MemoryMovieRepository;
+import com.team02.cinema.movie.repository.MemoryScheduleRepository;
+import com.team02.cinema.movie.repository.MovieRepository;
+import com.team02.cinema.movie.repository.ScheduleRepository;
+import com.team02.cinema.movie.service.MovieService;
+import com.team02.cinema.movie.service.ScheduleService;
+import com.team02.cinema.movie.view.MovieInputView;
+import com.team02.cinema.movie.view.MovieOutputView;
+import com.team02.cinema.movie.view.ScheduleInputView;
+import com.team02.cinema.movie.view.ScheduleOutputView;
+import com.team02.cinema.reservation.repository.MemoryReservationRepository;
+import com.team02.cinema.reservation.service.ReservationService;
+import com.team02.cinema.theater.service.TheaterService;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
@@ -24,6 +40,28 @@ public class Application {
         OutputView outputView = new OutputView();
         MemberController memberController = new MemberController(memberService,outputView);
         InputView inputView = new InputView(scanner);
+
+        MovieRepository movieRepository = new MemoryMovieRepository();
+        ScheduleRepository scheduleRepository = new MemoryScheduleRepository();
+        MovieService movieService = new MovieService(movieRepository, scheduleRepository);
+        // 예매 쪽 ReservationChecker 구현 전이라 "예매 없음"으로 고정
+        ScheduleService scheduleService = new ScheduleService(scheduleRepository, movieRepository,
+                scheduleId -> false);
+        ReservationService reservationService = new ReservationService(new MemoryReservationRepository());
+
+        TheaterService theaterService = new TheaterService();
+        theaterService.addScreen(1, 5, 5); // 1관: 5행 x 5열
+
+        MovieOutputView movieOutputView = new MovieOutputView();
+        ScheduleOutputView scheduleOutputView = new ScheduleOutputView();
+        MovieController movieController = new MovieController(movieService, scheduleService, reservationService,
+                new MovieInputView(scanner), movieOutputView, scheduleOutputView);
+        ScheduleController scheduleController = new ScheduleController(scheduleService, movieService, theaterService,
+                new ScheduleInputView(scanner), scheduleOutputView, movieOutputView);
+
+        // ===== 초기 데이터 =====
+        new MovieDataInitializer(movieService, scheduleService, theaterService).init();
+
 
 
         boolean running = true;
@@ -74,12 +112,29 @@ public class Application {
                     }else if(!memberController.canEnterAdminMenu()) {
                         outputView.printError(ErrorMessage.NO_ADMIN_PERMISSION.getMessage());
                     }else {
-                        outputView.printAdminMenuEntered();
-                    }
+                        runAdminMenu(inputView, outputView, movieController, scheduleController);                    }
                 }
                 default -> outputView.printError(ErrorMessage.INVALID_MENU.getMessage());
             }
 
+        }
+    }
+    private static void runAdminMenu(InputView inputView, OutputView outputView,
+                                     MovieController movieController, ScheduleController scheduleController) {
+        boolean inAdmin = true;
+        while (inAdmin) {
+            outputView.printAdminMenu();
+            String choice = inputView.readMenu();
+            switch (choice) {
+                case "1" -> movieController.registerMovie();
+                case "2" -> movieController.updateMovie();
+                case "3" -> movieController.deleteMovie();
+                case "4" -> scheduleController.showSchedules();
+                case "5" -> scheduleController.registerSchedule();
+                case "6" -> scheduleController.deleteSchedule();
+                case "0" -> inAdmin = false;
+                default -> outputView.printError(ErrorMessage.INVALID_MENU.getMessage());
+            }
         }
     }
 }

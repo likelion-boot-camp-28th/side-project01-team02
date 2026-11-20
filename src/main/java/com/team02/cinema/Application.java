@@ -12,16 +12,18 @@ import com.team02.cinema.member.service.MemberService;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
+import java.util.Scanner;
 
 
 public class Application {
     public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
         MemberRepository memberRepository = new MemoryMemberRepository();
         memberRepository.save(new Member("admin", "admin1234", "관리자", LocalDate.of(1990,1,1), Role.ADMIN));
         MemberService memberService = new MemberService(memberRepository);
         OutputView outputView = new OutputView();
         MemberController memberController = new MemberController(memberService,outputView);
-        InputView inputView = new InputView();
+        InputView inputView = new InputView(scanner);
 
 
         boolean running = true;

@@ -75,7 +75,8 @@ public class PaymentService {
 
 
         /// 결제 번호 생성
-        String paymentId = String.format("P%s%03d", LocalDate.now().format(DateTimeFormatter.BASIC_ISO_DATE), nextPaymentNumber);
+        String paymentId = String.format("P%s%03d", LocalDate.now()
+                .format(DateTimeFormatter.BASIC_ISO_DATE), nextPaymentNumber);
 
 
         /// 쿠폰 사용
@@ -91,7 +92,8 @@ public class PaymentService {
         int remainingPoint = pointService.getBalance(memberId);
 
 
-        Payment payment = new Payment(paymentId, selectCouponId, originalAmount, couponDiscount, usePoint, finalAmount, earnedPoints, earnedPoints, paymentType);
+        Payment payment = new Payment(paymentId, selectCouponId, originalAmount,
+                couponDiscount, usePoint, finalAmount, earnedPoints, earnedPoints, paymentType);
 
 
         payments.put(paymentId, payment);
@@ -100,7 +102,10 @@ public class PaymentService {
         nextPaymentNumber++;
 
         return payment;
+    }
 
+    public Payment pay(int memberId, int originalAmount, int usePoint, PaymentType.BankType paymentType) {
+        return pay(memberId, originalAmount, null, usePoint, paymentType);
 
     }
 
@@ -119,17 +124,61 @@ public class PaymentService {
 
     /// 회원별 전체 결제 내역 조회
     public List<Payment> getMyPayments(int memberId) {
-        return payments.values().stream().filter(payment -> paymentOwners.get(payment.getPaymentId()) == memberId).sorted(Comparator.comparing(Payment::getPaidAt).reversed()).toList();
-
+        return payments.values().stream()
+                .filter(payment -> paymentOwners.get(payment.getPaymentId()) == memberId)
+                .sorted(Comparator.comparing(Payment::getPaidAt).reversed()).toList();
 
     }
 
     /// 결제 완료 내역 조회
     public List<Payment> getCompletedPayment(int memberId) {
-        return getMyPayments(memberId).stream().filter(payment -> payment.isRefunded()).toList();
+
+        return getMyPayments(memberId).stream()
+                .filter(payment -> !payment.isRefunded()).toList();
     }
 
     /// 환불 완료 내역 조회
+    public List<Payment> getRefundedPayments(int memberId) {
+
+        return getMyPayments(memberId).stream()
+                .filter(payment -> payment.isRefunded()).toList();
+    }
+
+    /// 총 결제 금액
+    public int getTotalPaidAmount(int memberId) {
+
+        return getCompletedPayment(memberId).stream()
+                .mapToInt(payment -> payment.getFinalAmount()).sum();
 
 
+    }
+
+    /// 환불 처리
+    public Payment refund(int memberId, String paymentId) {
+
+        Payment payment = findPayment(memberId, paymentId);
+
+        if (payment.isRefunded()) { /// 환불 검사
+            throw new IllegalArgumentException("이미 환불된 결제 입니다.");
+        }
+
+        int expectedBalance = pointService.getBalance(memberId) + payment.getUsedPoints();
+
+        if (expectedBalance < payment.getEarnedPoints()) {
+
+        }
+
+        pointService.revokePoints(memberId, paymentId);
+        pointService.restorePoint(memberId, paymentId);
+
+
+        /// 쿠폰 복구
+        if (payment.getCouponId() != null) {
+            couponService.restoreCoupon(memberId, payment.getCouponId());
+        }
+
+        payment.refund();
+
+        return payment;
+    }
 }

@@ -3,10 +3,7 @@ package com.team02.cinema.payment.service;
 import com.team02.cinema.payment.repository.Point;
 import com.team02.cinema.payment.repository.PointType;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class PointService {
 
@@ -21,7 +18,7 @@ public class PointService {
     /// 초기 포인트 생성
     public void setInitPoint(int memberId, int point) {
 
-        if (point < 0) System.out.println("초기 포인트는 음수일 수 없습니다.");
+        if (point < 0) throw new IllegalArgumentException("초기 포인트는 음수일 수 없습니다.");
 
         resultBalances.put(memberId, point);
 
@@ -37,14 +34,14 @@ public class PointService {
     public void usePoint(int memberId, int amount, String paymentId) {
 
         if (amount < 0) { /// 포인트 사용 금액 0 보다 커야 된다.
-            System.out.println("포인트 사용금액을 잘못 입력하셨습니다.");
-            return;
+            throw new IllegalArgumentException("포인트 사용금액을 잘못 입력하셨습니다.");
+
         }
 
         /// 소유한 포인트 < 사용할 포인트 액수
         if (getBalance(memberId) < amount) {
-            System.out.println("포인트가 부족 합니다.");
-            return;
+            throw new IllegalArgumentException("포인트가 부족 합니다.");
+
         }
 
         /// 포인트 사용 차감
@@ -56,7 +53,7 @@ public class PointService {
     /// 포인트 적립
     public void earnPoint(int memberId, int amount, String paymentId) {
         if (amount < 0) {
-            System.out.println("잘못된 적립 포인트 입니다.");
+            throw new IllegalArgumentException("잘못된 적립 포인트 입니다.");
         }
 
         /// 포인트 증가
@@ -68,7 +65,7 @@ public class PointService {
     }
 
 
-    /// 포인트 사용/적립 ->> 내역 추가
+    /// 포인트 내역 저장
     private void addHistory(int memberId, String paymentId, int amount, PointType pointType) {
 
         Point point = new Point(memberId, paymentId, amount, pointType);
@@ -83,7 +80,7 @@ public class PointService {
                 .anyMatch(point -> point.getMemberId() == memberId && point.getPaymentId().equals(paymentId) && point.getType() == PointType.RESTORE);
 
         if (alreadyRestored) {
-            System.out.println("이미 반환된 포인트 입니다.");
+            throw new IllegalArgumentException("이미 반환된 포인트 입니다.");
         }
 
 
@@ -106,6 +103,38 @@ public class PointService {
         return result;
     }
 
+    /// 환불 시 적립 포인트 회수
+    public int revokePoints(int memberId, String paymentId) {
+
+        /// 이미 회수 했는지
+        boolean alreadyRevoked = pointHistories.stream()
+                .anyMatch(point -> point.getMemberId() == memberId
+                        && point.getPaymentId().equals(paymentId) && point.getType() == PointType.REVOKE);
+
+        if (alreadyRevoked)
+            throw new IllegalArgumentException("이미 회수된 포인트 입니다.");
+
+        int revokeAmount = pointHistories.stream() ///  해당 결제에서 적립된 포인트
+                .filter(point -> point.getMemberId() == memberId)
+                .filter(point -> point.getPaymentId().equals(paymentId))
+                .filter(point -> point.getType() == PointType.EARN)
+                .mapToInt(point -> point.getAmount()).sum();
+
+        if (revokeAmount == 0)
+            return 0;
+
+        if (getBalance(memberId) < revokeAmount) {
+            throw new IllegalArgumentException("회수할 포인트가 부족합니다. ");
+        }
+
+        /// 적립 회수
+        resultBalances.put(memberId, getBalance(memberId) - revokeAmount);
+        addHistory(memberId, paymentId, -revokeAmount, PointType.REVOKE);
+
+        return revokeAmount;
+    }
+
+
     /// 회원별 포인트 내역 조회
     public List<Point> getPointHistories(int memberId) {
 
@@ -123,6 +152,14 @@ public class PointService {
                 .filter(point -> point.getPaymentId().equals(paymentId))
                 .toList(); /// 해당 값 리스트 반환.
 
+    }
+
+    /// 회원별 포인트 사용 내역 조회
+    public List<Point> getUsePointHistoies(int memberId) {
+
+        return pointHistories.stream().filter(point -> point.getMemberId() == memberId)
+                .filter(point -> point.getType() == PointType.USE)
+                .sorted(Comparator.comparing(Point::getCreatedAt).reversed()).toList();
 
     }
 

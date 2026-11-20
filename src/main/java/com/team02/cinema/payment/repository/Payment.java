@@ -56,7 +56,7 @@ public class Payment {
     private final LocalDateTime paidAt;
 
     // 현재 결제 상태
-    // 예: "결제 완료", "환불 완료" (false)
+    // 예: "결제 완료" (false), "환불 완료" (true)
     private boolean refunded;
 
     public Payment(String paymentId, Integer couponId, int originalAmount, int couponDiscount, int usedPoints
@@ -87,6 +87,16 @@ public class Payment {
     public LocalDateTime getPaidAt() { return paidAt; }
     public boolean isRefunded() { return refunded; }
     public String getStatus() { return refunded ? "환불 완료" : "결제 완료"; }
+
+
+    /// 환불 상태 변경
+    public void refund(){
+        if (refunded){
+            throw new IllegalArgumentException("이미 환불된 결제 입니다.");
+        }
+        refunded = true;
+    }
+
 
     @Override
     public boolean equals(Object object) {

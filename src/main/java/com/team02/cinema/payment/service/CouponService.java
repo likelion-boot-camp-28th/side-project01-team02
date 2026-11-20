@@ -2,6 +2,7 @@ package com.team02.cinema.payment.service;
 
 import com.team02.cinema.payment.repository.Coupon;
 
+import java.util.Comparator;
 import java.util.LinkedHashMap;
 
 import java.util.List;
@@ -29,7 +30,26 @@ public class CouponService {
 
         return coupons.values().stream()
                 .filter(coupon -> coupon.getMemberId() == memberId)
-                .toList();
+                .filter(coupon -> !coupon.isUsed())
+                .sorted(Comparator.comparing(Coupon::getExpirationDate)).toList();
+    }
+
+    /// 사용 가능한 쿠폰 조회
+    public List<Coupon> getAvailableCoupons(int memberId) {
+        return coupons.values().stream()
+                .filter(coupon -> coupon.getMemberId() == memberId)
+                .filter(coupon -> coupon.isAvailable())
+                .sorted(Comparator.comparing(coupon -> coupon.getExpirationDate())).toList();
+
+    }
+
+
+    /// 사용 가능한 쿠폰 갯수
+    public long countAvailableCoupon(int memberId) {
+        return coupons.values().stream()
+                .filter(coupon -> coupon.getMemberId() == memberId)
+                .filter(coupon -> coupon.isAvailable()).count();
+
     }
 
     /// 사용할 쿠폰의 할인금액 계산
@@ -41,10 +61,12 @@ public class CouponService {
      */
     public int calculateDiscount(int memberId, int coupoonId, int ticketAmount) {
 
+        if (coupoonId == 0) return 0;
+
         Coupon coupon = findCoupon(memberId, coupoonId);
 
         if (!coupon.isAvailable()) {
-            System.out.println("사용 할 수 없는 쿠폰입니다. ");
+            throw new IllegalArgumentException("사용 할 수 없는 쿠폰입니다. ");
         }
 
         /// 할인금액이 티켓 금액을 넘지 않도록 제한 : - 금액 방지
@@ -53,11 +75,11 @@ public class CouponService {
     }
 
     /// 해당 쿠폰 ->> 쿠폰 조회 및 소유자 검사
-    private Coupon findCoupon(int memberId, int couponId) {
+    public Coupon findCoupon(int memberId, int couponId) {
 
         Coupon coupon = coupons.get(couponId);  ///  쿠폰 번호 ->> 쿠폰 존재 여부
         if (coupon == null || coupon.getMemberId() != memberId) {  /// 해당 쿠폰 보유 id == 회원 id 체크
-            System.out.println("쿠폰을 찾을 수 없습니다.");
+            throw new IllegalArgumentException("쿠폰을 찾을 수 없습니다.");
 
         }
 
@@ -68,8 +90,21 @@ public class CouponService {
     /// 결제 성공 시 쿠폰 사용
     public void useCoupon(int memberId, int couponId) {
 
+        if (couponId == 0) {
+            return;
+        }
+
         Coupon coupon = findCoupon(memberId, couponId);
         coupon.use();
+    }
+
+    /// 쿠폰 복구
+    public void restoreCoupon(int memberId, int couponId) {
+        if (couponId == 0) return;
+
+        Coupon coupon = findCoupon(memberId, couponId);
+        coupon.restore();
+
     }
 
 

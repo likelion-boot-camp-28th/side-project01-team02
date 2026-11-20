@@ -12,6 +12,8 @@ public class OutputView {
         System.out.println("5. 관리자 메뉴");
         System.out.println("6. 영화 목록");
         System.out.println("7. 영화 상세");
+        System.out.println("8. 예매 내역");
+        System.out.println("9. 예매 취소");
         System.out.println("0. 종료");
     }
 

@@ -10,6 +10,8 @@ public class OutputView {
         System.out.println("3. 로그아웃");
         System.out.println("4. 내 정보 조회");
         System.out.println("5. 관리자 메뉴");
+        System.out.println("6. 영화 목록");
+        System.out.println("7. 영화 상세");
         System.out.println("0. 종료");
     }
 

@@ -1,9 +1,13 @@
 package com.team02.cinema.theater.domain;
 
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.IntStream;
 
 public class Screen {
+    private static final Pattern SEAT_NAME = Pattern.compile("([A-Za-z])(\\d{1,2})");
+
     private final int num;
     private final int row;
     private final int col;
@@ -42,6 +46,14 @@ public class Screen {
             throw new IllegalArgumentException("존재하지 않는 좌석입니다.");
         }
         return seats.get(row).get(col);
+    }
+
+    public Seat getSeat(String name) {
+        Matcher matcher = SEAT_NAME.matcher(name == null ? "" : name.trim());
+        if (!matcher.matches()) {
+            throw new IllegalArgumentException("좌석 번호 형식이 올바르지 않습니다. 예) A3");
+        }
+        return getSeat(Character.toUpperCase(matcher.group(1).charAt(0)) - 'A', Integer.parseInt(matcher.group(2)) - 1);
     }
 
     public int getNum() {

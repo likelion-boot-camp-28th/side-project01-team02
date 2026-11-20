@@ -16,6 +16,4 @@ public interface ReservationRepository {
     List<Reservation> findByMember(Member member);
 
     List<Reservation> findByScheduleId(Long scheduleId);
-
-    boolean deleteById(Long id);
 }

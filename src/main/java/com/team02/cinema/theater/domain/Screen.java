@@ -7,6 +7,7 @@ public class Screen {
     private final int num;
     private final int row;
     private final int col;
+    private final List<List<Seat>> seats;
 
     public Screen(int num, int row, int col){
         if (row < 1 || col < 1) {
@@ -15,6 +16,7 @@ public class Screen {
         this.num = num;
         this.row = row;
         this.col = col;
+        this.seats = createSeats();
     }
 
     public List<List<Seat>> createSeats() {
@@ -29,6 +31,17 @@ public class Screen {
 
                 }).toList())
                 .toList();
+    }
+
+    public List<List<Seat>> getSeats() {
+        return seats;
+    }
+
+    public Seat getSeat(int row, int col) {
+        if (row < 0 || row >= this.row || col < 0 || col >= this.col) {
+            throw new IllegalArgumentException("존재하지 않는 좌석입니다.");
+        }
+        return seats.get(row).get(col);
     }
 
     public int getNum() {

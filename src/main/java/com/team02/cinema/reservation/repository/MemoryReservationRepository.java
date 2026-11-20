@@ -42,6 +42,13 @@ public class MemoryReservationRepository implements ReservationRepository {
     }
 
     @Override
+    public List<Reservation> findByScheduleId(Long scheduleId) {
+        return reservations.values().stream()
+                .filter(reservation -> reservation.getSchedule().getId().equals(scheduleId))
+                .toList();
+    }
+
+    @Override
     public boolean deleteById(Long id) {
         return reservations.remove(id) != null;
     }

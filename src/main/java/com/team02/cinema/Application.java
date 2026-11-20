@@ -66,6 +66,15 @@ public class Application {
                         outputView.printMyInfo(member.getName(), member.getPoint());
                     }
                 }
+                case "5" -> {
+                    if (memberController.getLoginMember().isEmpty()) {
+                        outputView.printError(ErrorMessage.NOT_LOGGED_IN.getMessage());
+                    }else if(!memberController.canEnterAdminMenu()) {
+                        outputView.printError(ErrorMessage.NO_ADMIN_PERMISSION.getMessage());
+                    }else {
+                        outputView.printAdminMenuEntered();
+                    }
+                }
                 default -> outputView.printError(ErrorMessage.INVALID_MENU.getMessage());
             }
 

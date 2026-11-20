@@ -5,6 +5,7 @@ import com.team02.cinema.payment.controller.CouponController;
 import com.team02.cinema.payment.controller.PaymentController;
 import com.team02.cinema.payment.service.CouponService;
 import com.team02.cinema.payment.service.PaymentService;
+import com.team02.cinema.payment.service.PointService;
 
 import java.util.Scanner;
 
@@ -14,7 +15,7 @@ public class PaymentMenu {
 
     public static void main(String[] args) {
         CouponController coupons = new CouponController(new CouponService());
-        PaymentController points = new PaymentController();
+        PaymentController points = new PaymentController(new PaymentService(new CouponService(), new PointService()));
 
         Scanner sc = new Scanner(System.in);
 

@@ -1,55 +1,53 @@
 package com.team02.cinema.theater.service;
 
-import com.team02.cinema.member.domain.Member;
 import com.team02.cinema.movie.domain.schedule.Schedule;
 import com.team02.cinema.theater.domain.Screen;
 import com.team02.cinema.theater.domain.Seat;
-import com.team02.cinema.theater.repository.ScreenRepository;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 
 public class TheaterService {
-    private final ScreenRepository screenRepository;
-
-    public TheaterService(ScreenRepository screenRepository){
-        this.screenRepository = screenRepository;
-    }
+    private final Map<Integer, Screen> screens = new TreeMap<>();
 
     public void addScreen(int num, int row, int col){
-        screenRepository.save(num, new Screen(row, col));
+        screens.put(num, new Screen(num, row, col));
     }
 
-    public Map<Integer, Screen> getScreens() {
-        return screenRepository.findAll();
+    public Collection<Screen> getScreens() {
+        return List.copyOf(screens.values());
     }
 
     public Screen getScreen(int num){
-        return screenRepository.findByNum(num)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 상영관입니다."));
+        Screen screen = screens.get(num);
+        if (screen == null) {
+            throw new IllegalArgumentException("존재하지 않는 상영관입니다.");
+        }
+        return screen;
     }
 
-    public void addSchedule(int num, Schedule schedule){
-        getScreen(num).addSchedule(schedule);
+    public Seat getSeat(Schedule schedule, int row, int col){
+        List<List<Seat>> seats = schedule.getSeats();
+        if (row < 0 || row >= seats.size() || col < 0 || col >= seats.getFirst().size()) {
+            throw new IllegalArgumentException("존재하지 않는 좌석입니다.");
+        }
+        return seats.get(row).get(col);
     }
 
-    public Seat getSeat(int num, Schedule schedule, int row, int col){
-        return getScreen(num).getSeat(schedule, row, col);
+    public void reserveSeat(Schedule schedule, int row, int col){
+        getSeat(schedule, row, col).reserve();
     }
 
-    public void reserveSeat(int num, Schedule schedule, int row, int col, Member member){
-        getSeat(num, schedule, row, col).reserve(member);
+    public void cancelSeat(Schedule schedule, int row, int col){
+        getSeat(schedule, row, col).cancel();
     }
 
-    public void cancelSeat(int num, Schedule schedule, int row, int col){
-        getSeat(num, schedule, row, col).cancel();
-    }
-
-    public List<Seat> getAvailableSeats(int num, Schedule schedule){
-        return getScreen(num).getAvailableSeats(schedule);
-    }
-
-    public List<List<Seat>> getScreenSeats(int num, Schedule schedule){
-        return getScreen(num).getSeats(schedule);
+    public List<Seat> getAvailableSeats(Schedule schedule){
+        return schedule.getSeats().stream()
+                .flatMap(List::stream)
+                .filter(seat -> !seat.isReserved())
+                .toList();
     }
 }

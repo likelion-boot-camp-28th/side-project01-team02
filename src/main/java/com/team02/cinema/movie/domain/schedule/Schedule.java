@@ -2,8 +2,10 @@ package com.team02.cinema.movie.domain.schedule;
 
 import com.team02.cinema.movie.domain.Movie.Movie;
 import com.team02.cinema.theater.domain.Screen;
+import com.team02.cinema.theater.domain.Seat;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 public class Schedule {
 
@@ -14,6 +16,7 @@ public class Schedule {
     private final Screen screen;
     private final LocalDateTime startTime;
     private final int basePrice;
+    private final List<List<Seat>> seats;
 
     public Schedule(Long id, Movie movie, Screen screen, LocalDateTime startTime, int basePrice) {
         validate(movie, screen, startTime, basePrice);
@@ -22,6 +25,7 @@ public class Schedule {
         this.screen = screen;
         this.startTime = startTime;
         this.basePrice = basePrice;
+        this.seats = screen.createSeats();
     }
 
     private void validate(Movie movie, Screen screen, LocalDateTime startTime, int basePrice) {

@@ -63,10 +63,6 @@ public class Schedule {
         return basePrice;
     }
 
-    public List<List<Seat>> getSeats() {
-        return seats;
-    }
-
     // 이 회차가 상영관을 비워 주는 시각 (시작 + 상영시간 + 청소 시간)
     public LocalDateTime getEndTime() {
         return startTime.plusMinutes(movie.getRunningTime() + CLEANING_MINUTES);

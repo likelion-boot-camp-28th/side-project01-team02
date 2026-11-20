@@ -9,7 +9,7 @@ public enum CouponName {
     WELCOME_FLAT_3000("신규 가입 3,000원 즉시 할인");
 
 
-    private String korName;
+    private final String korName;
 
     CouponName(String korName) {
         this.korName = korName;

@@ -2,8 +2,10 @@ package com.team02.cinema.movie.domain.schedule;
 
 import com.team02.cinema.movie.domain.Movie.Movie;
 import com.team02.cinema.theater.domain.Screen;
+import com.team02.cinema.theater.domain.Seat;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 public class Schedule {
 
@@ -14,6 +16,7 @@ public class Schedule {
     private final Screen screen;
     private final LocalDateTime startTime;
     private final int basePrice;
+    private final List<List<Seat>> seats;
 
     public Schedule(Long id, Movie movie, Screen screen, LocalDateTime startTime, int basePrice) {
         validate(movie, screen, startTime, basePrice);
@@ -22,6 +25,7 @@ public class Schedule {
         this.screen = screen;
         this.startTime = startTime;
         this.basePrice = basePrice;
+        this.seats = screen.createSeats();
     }
 
     private void validate(Movie movie, Screen screen, LocalDateTime startTime, int basePrice) {
@@ -37,6 +41,30 @@ public class Schedule {
         if (basePrice <= 0) {
             throw new IllegalArgumentException("기본 가격은 0원보다 커야 합니다.");
         }
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public Movie getMovie() {
+        return movie;
+    }
+
+    public Screen getScreen() {
+        return screen;
+    }
+
+    public LocalDateTime getStartTime() {
+        return startTime;
+    }
+
+    public int getBasePrice() {
+        return basePrice;
+    }
+
+    public List<List<Seat>> getSeats() {
+        return seats;
     }
 
     // 이 회차가 상영관을 비워 주는 시각 (시작 + 상영시간 + 청소 시간)

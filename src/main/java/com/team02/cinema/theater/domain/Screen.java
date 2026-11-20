@@ -4,21 +4,35 @@ import java.util.List;
 import java.util.stream.IntStream;
 
 public class Screen {
+    private final int num;
     private final int row;
     private final int col;
 
-    public Screen(int row, int col){
+    public Screen(int num, int row, int col){
         if (row < 1 || col < 1) {
             throw new IllegalArgumentException("잘못된 좌석 크기입니다.");
         }
+        this.num = num;
         this.row = row;
         this.col = col;
     }
 
     public List<List<Seat>> createSeats() {
         return IntStream.range(0, row)
-                .mapToObj(i -> IntStream.range(0, col).mapToObj(j -> new Seat(i, j)).toList())
+                .mapToObj(i -> IntStream.range(0, col).mapToObj(j -> {
+                    Seat seat = new Seat(i, j);
+                    if(i == row - 1){
+                        seat.switchPremium();
+                    }
+
+                    return seat;
+
+                }).toList())
                 .toList();
+    }
+
+    public int getNum() {
+        return num;
     }
 
     public int getRow() {

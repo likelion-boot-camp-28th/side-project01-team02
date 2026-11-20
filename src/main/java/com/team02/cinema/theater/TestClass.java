@@ -5,7 +5,6 @@ import com.team02.cinema.movie.domain.Movie.AgeRating;
 import com.team02.cinema.movie.domain.Movie.Genre;
 import com.team02.cinema.movie.domain.Movie.Movie;
 import com.team02.cinema.movie.domain.schedule.Schedule;
-import com.team02.cinema.theater.repository.MemoryScreenRepository;
 import com.team02.cinema.theater.service.TheaterService;
 import com.team02.cinema.theater.view.TheaterView;
 
@@ -14,39 +13,37 @@ import java.time.LocalDateTime;
 
 public class TestClass {
     public static void main(String[] args) {
-        TheaterService service = new TheaterService(new MemoryScreenRepository());
+        TheaterService service = new TheaterService();
         TheaterView view = new TheaterView();
 
         title("1. 상영관 등록");
         service.addScreen(2, 8, 3);
         service.addScreen(1, 5, 6);
-        view.printScreens(service);
+        view.printScreens(service.getScreens());
 
         Movie movie = new Movie(1L, "테스트 영화", Genre.ACTION, 120, AgeRating.ALL, LocalDate.now());
         LocalDateTime now = LocalDateTime.now();
         Schedule morning = new Schedule(1L, movie, service.getScreen(1), now, 10000);
         Schedule evening = new Schedule(2L, movie, service.getScreen(1), now.plusHours(6), 12000);
-        service.addSchedule(1, morning);
-        service.addSchedule(1, evening);
         Member member = new Member("test", "1234", "홍길동", LocalDate.of(2000, 1, 1));
 
         title("2. 예약 전 - 1관 오전 회차");
-        view.printSeats(service.getSeats(morning));
+        view.printSeats(morning.getSeats());
 
         title("3. 오전 회차 A1, B3, E6 예약");
-        service.reserveSeat(morning, 0, 0, member);
-        service.reserveSeat(morning, 1, 2, member);
-        service.reserveSeat(morning, 4, 5, member);
-        view.printSeats(service.getSeats(morning));
+        service.reserveSeat(morning, 0, 0);
+        service.reserveSeat(morning, 1, 2);
+        service.reserveSeat(morning, 4, 5);
+        view.printSeats(morning.getSeats());
         System.out.println("빈 좌석 수 : " + service.getAvailableSeats(morning).size());
 
         title("4. 같은 좌석, 저녁 회차는 영향 없음");
-        view.printSeats(service.getSeats(evening));
+        view.printSeats(evening.getSeats());
         System.out.println("빈 좌석 수 : " + service.getAvailableSeats(evening).size());
 
         title("5. 오전 B3 취소");
         service.cancelSeat(morning, 1, 2);
-        view.printSeats(service.getSeats(morning));
+        view.printSeats(morning.getSeats());
         System.out.println("빈 좌석 수 : " + service.getAvailableSeats(morning).size());
 
         title("6. 좌석 단건 조회");
@@ -54,12 +51,10 @@ public class TestClass {
         view.printSeat(service.getSeat(morning, 0, 1));
 
         title("7. 예외 상황");
-        expectError("이미 예약된 좌석(A1) 재예약", () -> service.reserveSeat(morning, 0, 0, member));
+        expectError("이미 예약된 좌석(A1) 재예약", () -> service.reserveSeat(morning, 0, 0));
         expectError("예약 안 된 좌석(B3) 취소", () -> service.cancelSeat(morning, 1, 2));
         expectError("범위 밖 좌석(Z9)", () -> service.getSeat(morning, 25, 8));
         expectError("없는 상영관(9관)", () -> service.getScreen(9));
-        expectError("등록 안 된 스케줄", () -> service.getSeats(new Schedule(9L, movie, service.getScreen(2), now, 10000)));
-        expectError("중복 스케줄 등록", () -> service.addSchedule(1, morning));
     }
 
     private static void title(String text) {

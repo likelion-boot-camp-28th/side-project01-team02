@@ -9,7 +9,6 @@ import com.team02.cinema.reservation.domain.Reservation;
 import com.team02.cinema.reservation.repository.MemoryReservationRepository;
 import com.team02.cinema.reservation.repository.ReservationRepository;
 import com.team02.cinema.theater.domain.Seat;
-import com.team02.cinema.theater.repository.MemoryScreenRepository;
 import com.team02.cinema.theater.service.TheaterService;
 import com.team02.cinema.theater.view.TheaterView;
 
@@ -19,21 +18,20 @@ import java.util.List;
 
 public class TestClass {
     public static void main(String[] args) {
-        TheaterService theater = new TheaterService(new MemoryScreenRepository());
+        TheaterService theater = new TheaterService();
         TheaterView view = new TheaterView();
         theater.addScreen(1, 5, 6);
 
         Movie movie = new Movie(1L, "테스트 영화", Genre.ACTION, 120, AgeRating.ALL, LocalDate.now());
         Schedule schedule = new Schedule(1L, movie, theater.getScreen(1), LocalDateTime.now(), 10000);
-        theater.addSchedule(1, schedule);
         Member member = new Member("test", "1234", "홍길동", LocalDate.of(2000, 1, 1));
 
         title("1. 좌석 선택 후 예약 생성 (C5, C6)");
         List<Seat> seats = List.of(theater.getSeat(schedule, 2, 4), theater.getSeat(schedule, 2, 5));
-        seats.forEach(seat -> seat.reserve(member));
+        seats.forEach(seat -> seat.reserve());
         Reservation reservation = new Reservation(1L, member, schedule, seats);
         printReservation(reservation);
-        view.printSeats(theater.getSeats(schedule));
+        view.printSeats(schedule.getSeats());
 
         title("2. 저장소 저장 - 아이디 없는 예약에 번호가 붙는지 확인");
         ReservationRepository repository = new MemoryReservationRepository();

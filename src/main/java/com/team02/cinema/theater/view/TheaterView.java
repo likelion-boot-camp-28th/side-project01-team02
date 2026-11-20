@@ -1,8 +1,9 @@
 package com.team02.cinema.theater.view;
 
 import com.team02.cinema.theater.domain.Seat;
-import com.team02.cinema.theater.service.TheaterService;
+import com.team02.cinema.theater.domain.Screen;
 
+import java.util.Collection;
 import java.util.List;
 
 public class TheaterView {
@@ -20,7 +21,7 @@ public class TheaterView {
 
         for(int i = 0; i < seats.size(); i++){
             StringBuilder line = new StringBuilder((char)(i + 'A') + " ");
-            seats.get(i).forEach(seat -> line.append(seat.isReserved() ? "[X]" : "[ ]"));
+            seats.get(i).forEach(seat -> line.append(seat.isReserved() ? "[X]" : seat.isPremium() ? "[P]" : "[ ]"));
             System.out.println(line);
         }
     }
@@ -29,7 +30,7 @@ public class TheaterView {
         System.out.println(seat);
     }
 
-    public void printScreens(TheaterService theater){
-        theater.getScreens().forEach((num, screen) -> System.out.println(num + "관 | " + screen));
+    public void printScreens(Collection<Screen> screens){
+        screens.forEach(screen -> System.out.println(screen.getNum() + "관 | " + screen));
     }
 }

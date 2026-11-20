@@ -1,4 +1,4 @@
-package com.team02.cinema.common.view;
+package com.team02.cinema.movie.view;
 
 import com.team02.cinema.movie.domain.Movie.Movie;
 
@@ -14,12 +14,11 @@ public class MovieOutputView {
 
         System.out.println("===== 영화 목록 =====");
         for (Movie movie : movies) {
-            System.out.printf("%d. %s | %s | %d분 | %s%n",
-                    movie.getId(),
-                    movie.getTitle(),
-                    movie.getGenre().getGenre(),
-                    movie.getRunningTime(),
-                    movie.getAgeRating().getRating());
+            System.out.println(movie.getId() + ". "
+                    + movie.getTitle() + " | "
+                    + movie.getGenre().getGenre() + " | "
+                    + movie.getRunningTime() + "분 | "
+                    + movie.getAgeRating().getRating());
         }
     }
 }

@@ -32,6 +32,12 @@ public class MovieService {
         return movieRepository.save(movie);
     }
 
+    // 영화 한 편 조회: 없는 id면 예외
+    public Movie findMovie(Long id) {
+        return movieRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 영화입니다. id=" + id));
+    }
+
     // 영화 수정: 없는 id면 예외, null로 넘긴 항목은 기존 값을 그대로 유지한다
     public Movie updateMovie(Long id, String title, Genre genre, Integer runningTime, AgeRating ageRating,
                              LocalDate releaseDate) {

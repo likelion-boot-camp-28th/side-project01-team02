@@ -46,7 +46,7 @@ public class TestClass {
                 new ScheduleInputView(scanner), scheduleOutputView, movieOutputView);
 
         // ===== 초기 데이터 =====
-        new MovieDataInitializer(movieService, scheduleService).init(theaterService.getScreen(1));
+        new MovieDataInitializer(movieService, scheduleService, theaterService).init();
 
         // ===== 메인 메뉴 =====
         boolean running = true;

@@ -24,7 +24,7 @@ public class ScheduleService {
         this.reservationChecker = reservationChecker;
     }
 
-    // 상영관은 아직 ScreenRepository와 상영관 id가 없어서 Screen 객체를 직접 받음
+    // 스케줄 등록: 상영관(Screen)은 호출하는 쪽에서 TheaterService로 찾아서 넘겨주도록 함
     public Schedule registerSchedule(Long movieId, Screen screen, LocalDateTime startTime, int basePrice) {
         Movie movie = movieRepository.findById(movieId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 영화입니다. id=" + movieId));
@@ -32,8 +32,9 @@ public class ScheduleService {
         // overlaps()에 넘기기 위한 객체
         Schedule newSchedule = new Schedule(null, movie, screen, startTime, basePrice);
 
-        // 상영관이 1개라서 전체 스케줄과 비교한다
+        // 같은 상영관의 스케줄끼리만 시간이 겹치는지 비교한다 (확장 가능성)
         scheduleRepository.findAll().stream()
+                .filter(existing -> existing.getScreen().getNum() == screen.getNum())
                 .filter(existing -> existing.overlaps(newSchedule))
                 .findFirst()
                 .ifPresent(existing -> {

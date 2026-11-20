@@ -31,7 +31,7 @@ public class TestClass {
         seats.forEach(seat -> seat.reserve());
         Reservation reservation = new Reservation(1L, member, schedule, seats);
         printReservation(reservation);
-        view.printSeats(schedule.getSeats());
+        view.printSeats(theater.getSeats(schedule));
 
         title("2. 저장소 저장 - 아이디 없는 예약에 번호가 붙는지 확인");
         ReservationRepository repository = new MemoryReservationRepository();

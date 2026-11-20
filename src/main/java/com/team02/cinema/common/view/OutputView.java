@@ -6,6 +6,7 @@ public class OutputView {
         System.out.println("2. 로그인");
         System.out.println("3. 로그아웃");
         System.out.println("4. 내 정보 조회");
+        System.out.println("5. 관리자 메뉴");
         System.out.println("0. 종료");
     }
 
@@ -33,4 +34,9 @@ public class OutputView {
     public void printSignUpSuccess(){
         System.out.println("회원가입 되었습니다.");
     }
+
+    public void printAdminMenuEntered(){
+        System.out.println("관리자 메뉴에 진입했습니다.");
+    }
+
 }

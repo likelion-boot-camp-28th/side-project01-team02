@@ -13,7 +13,7 @@ public class MemoryReservationRepository implements ReservationRepository {
     private long lastId = 0;
 
     @Override
-    public Reservation save(Reservation reservation) {
+    public synchronized Reservation save(Reservation reservation) {
         Reservation saved = reservation;
         if (reservation.getId() == null) {
             saved = new Reservation(lastId + 1, reservation.getMember(),
@@ -25,24 +25,24 @@ public class MemoryReservationRepository implements ReservationRepository {
     }
 
     @Override
-    public List<Reservation> findAll() {
+    public synchronized List<Reservation> findAll() {
         return List.copyOf(reservations.values());
     }
 
     @Override
-    public Optional<Reservation> findById(Long id) {
+    public synchronized Optional<Reservation> findById(Long id) {
         return Optional.ofNullable(reservations.get(id));
     }
 
     @Override
-    public List<Reservation> findByMember(Member member) {
+    public synchronized List<Reservation> findByMember(Member member) {
         return reservations.values().stream()
                 .filter(reservation -> reservation.getMember().getLoginId().equals(member.getLoginId()))
                 .toList();
     }
 
     @Override
-    public List<Reservation> findByScheduleId(Long scheduleId) {
+    public synchronized List<Reservation> findByScheduleId(Long scheduleId) {
         return reservations.values().stream()
                 .filter(reservation -> reservation.getSchedule().getId().equals(scheduleId))
                 .toList();

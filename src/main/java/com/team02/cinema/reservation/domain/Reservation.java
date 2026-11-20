@@ -42,25 +42,25 @@ public class Reservation {
         }
     }
 
-    public void confirm(){
+    public synchronized void confirm(){
         if (status != ReservationStatus.PENDING) {
             throw new IllegalStateException("결제 대기 상태의 예약만 확정할 수 있습니다.");
         }
         status = ReservationStatus.CONFIRMED;
     }
 
-    public void cancel(){
+    public synchronized void cancel(){
         if (status == ReservationStatus.CANCELED) {
             throw new IllegalStateException("이미 취소된 예약입니다.");
         }
         status = ReservationStatus.CANCELED;
     }
 
-    public boolean isActive(){
+    public synchronized boolean isActive(){
         return status != ReservationStatus.CANCELED;
     }
 
-    public ReservationStatus getStatus() {
+    public synchronized ReservationStatus getStatus() {
         return status;
     }
 

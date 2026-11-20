@@ -4,6 +4,7 @@ import com.team02.cinema.common.exception.ErrorMessage;
 import com.team02.cinema.common.view.InputView;
 import com.team02.cinema.common.view.OutputView;
 import com.team02.cinema.member.controller.MemberController;
+import com.team02.cinema.member.domain.Member;
 import com.team02.cinema.member.repository.MemberRepository;
 import com.team02.cinema.member.repository.MemoryMemberRepository;
 import com.team02.cinema.member.service.MemberService;
@@ -52,6 +53,14 @@ public class Application {
                     }else{
                         memberController.logout();
                         outputView.printLogout();
+                    }
+                }
+                case "4" -> {
+                    if (memberController.getLoginMember().isEmpty()) {
+                        outputView.printError(ErrorMessage.NOT_LOGGED_IN.getMessage());
+                    }else {
+                        Member member = memberController.getLoginMember().get();
+                        outputView.printMyInfo(member.getName(), member.getPoint());
                     }
                 }
                 default -> outputView.printError(ErrorMessage.INVALID_MENU.getMessage());

@@ -1,5 +1,6 @@
 package com.team02.cinema;
 
+import com.team02.cinema.common.exception.ErrorMessage;
 import com.team02.cinema.common.view.InputView;
 import com.team02.cinema.common.view.OutputView;
 import com.team02.cinema.member.controller.MemberController;
@@ -37,7 +38,7 @@ public class Application {
                         LocalDate birth = inputView.readBirthDate();
                         memberController.signUp(id,password,name,birth);
                     } catch (DateTimeParseException e) {
-                        outputView.printInvalidBirthDate();
+                        outputView.printError(ErrorMessage.INVALID_BIRTH_DATE.getMessage());
                     }
                 }
                 case "2" -> {
@@ -47,13 +48,13 @@ public class Application {
                 }
                 case "3" -> {
                     if (memberController.getLoginMember().isEmpty()){
-                        outputView.printNotLoggedIn();
+                        outputView.printError(ErrorMessage.NOT_LOGGED_IN.getMessage());
                     }else{
                         memberController.logout();
                         outputView.printLogout();
                     }
                 }
-                default -> outputView.printInvalidMenu();
+                default -> outputView.printError(ErrorMessage.INVALID_MENU.getMessage());
             }
 
         }

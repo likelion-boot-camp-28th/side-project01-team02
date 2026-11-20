@@ -112,12 +112,29 @@ public class Application {
                     }else if(!memberController.canEnterAdminMenu()) {
                         outputView.printError(ErrorMessage.NO_ADMIN_PERMISSION.getMessage());
                     }else {
-                        outputView.printAdminMenuEntered();
-                    }
+                        runAdminMenu(inputView, outputView, movieController, scheduleController);                    }
                 }
                 default -> outputView.printError(ErrorMessage.INVALID_MENU.getMessage());
             }
 
+        }
+    }
+    private static void runAdminMenu(InputView inputView, OutputView outputView,
+                                     MovieController movieController, ScheduleController scheduleController) {
+        boolean inAdmin = true;
+        while (inAdmin) {
+            outputView.printAdminMenu();
+            String choice = inputView.readMenu();
+            switch (choice) {
+                case "1" -> movieController.registerMovie();
+                case "2" -> movieController.updateMovie();
+                case "3" -> movieController.deleteMovie();
+                case "4" -> scheduleController.showSchedules();
+                case "5" -> scheduleController.registerSchedule();
+                case "6" -> scheduleController.deleteSchedule();
+                case "0" -> inAdmin = false;
+                default -> outputView.printError(ErrorMessage.INVALID_MENU.getMessage());
+            }
         }
     }
 }

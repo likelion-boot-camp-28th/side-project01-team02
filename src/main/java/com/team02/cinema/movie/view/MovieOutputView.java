@@ -21,4 +21,14 @@ public class MovieOutputView {
                     + movie.getAgeRating().getRating());
         }
     }
+
+    // 영화 한 편의 상세 정보
+    public void printMovieDetail(Movie movie) {
+        System.out.println("===== 영화 상세 =====");
+        System.out.println("제목 : " + movie.getTitle());
+        System.out.println("장르 : " + movie.getGenre().getGenre());
+        System.out.println("상영시간 : " + movie.getRunningTime() + "분");
+        System.out.println("관람등급 : " + movie.getAgeRating().getRating());
+        System.out.println("개봉일 : " + movie.getReleaseDate());
+    }
 }

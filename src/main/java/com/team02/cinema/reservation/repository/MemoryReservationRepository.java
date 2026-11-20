@@ -17,7 +17,7 @@ public class MemoryReservationRepository implements ReservationRepository {
         Reservation saved = reservation;
         if (reservation.getId() == null) {
             saved = new Reservation(lastId + 1, reservation.getMember(),
-                    reservation.getSchedule(), reservation.getSeats());
+                    reservation.getSchedule(), reservation.getSeats(), reservation.getStatus());
         }
         lastId = Math.max(lastId, saved.getId());
         reservations.put(saved.getId(), saved);
@@ -46,10 +46,5 @@ public class MemoryReservationRepository implements ReservationRepository {
         return reservations.values().stream()
                 .filter(reservation -> reservation.getSchedule().getId().equals(scheduleId))
                 .toList();
-    }
-
-    @Override
-    public boolean deleteById(Long id) {
-        return reservations.remove(id) != null;
     }
 }

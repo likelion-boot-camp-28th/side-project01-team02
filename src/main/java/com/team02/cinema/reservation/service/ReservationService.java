@@ -10,6 +10,8 @@ import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.Set;
 
 public class ReservationService {
@@ -17,6 +19,7 @@ public class ReservationService {
     private static final int CANCEL_LIMIT_MINUTES = 20;
 
     private final ReservationRepository reservationRepository;
+    private final Map<Long, Object> locks = new ConcurrentHashMap<>();
 
     public ReservationService(ReservationRepository reservationRepository){
         this.reservationRepository = reservationRepository;
@@ -45,10 +48,13 @@ public class ReservationService {
         if (!screenSeats.containsAll(seats) || new HashSet<>(seats).size() != seats.size()) {
             throw new IllegalArgumentException("선택할 수 없는 좌석입니다.");
         }
-        if (seats.stream().anyMatch(getReservedSeats(schedule)::contains)) {
-            throw new IllegalStateException("이미 예약된 좌석입니다.");
+        synchronized (locks.computeIfAbsent(schedule.getId(), id -> new Object())) {
+            Set<Seat> reserved = getReservedSeats(schedule);
+            if (seats.stream().anyMatch(reserved::contains)) {
+                throw new IllegalStateException("이미 예약된 좌석입니다.");
+            }
+            return reservationRepository.save(reservation);
         }
-        return reservationRepository.save(reservation);
     }
 
     public Reservation getReservation(Long id){

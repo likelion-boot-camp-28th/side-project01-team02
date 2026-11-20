@@ -20,9 +20,16 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Scanner;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.IntConsumer;
+import java.util.function.IntFunction;
 
 public class TestClass {
-    public static void main(String[] args) {
+    public static void main(String[] args) throws InterruptedException {
         TheaterService theater = new TheaterService();
         TheaterView view = new TheaterView();
         ReservationService service = new ReservationService(new MemoryReservationRepository());
@@ -99,7 +106,35 @@ public class TestClass {
         System.out.println();
         controller.cancel(member);
 
-        title("9. 예외 상황");
+        title("9. 동시 예매 - 같은 좌석에 스레드 50개가 동시에 예매");
+        Schedule crowded = new Schedule(6L, movie, screen, now.plusHours(3), 10000);
+        raceReserve(service, member, crowded, 50, i -> "A1");
+        System.out.println("A1 유효 예매 수 (1이어야 함) : " + service.getReservedSeats(crowded).size());
+
+        title("10. 동시 예매 - 서로 다른 좌석 20개를 동시에 예매");
+        Schedule open = new Schedule(7L, movie, screen, now.plusHours(4), 10000);
+        raceReserve(service, member, open, 20, i -> "" + (char)('A' + i / 5) + (i % 5 + 1));
+        System.out.println("유효 예매 좌석 수 (20이어야 함) : " + service.getReservedSeats(open).size());
+
+        title("11. 동시 취소 - 같은 예매를 스레드 20개가 동시에 취소");
+        Reservation target = service.reserve(member, open, "E1");
+        race(20, i -> service.cancelBySystem(target.getId()));
+        System.out.println("최종 상태 (CANCELED여야 함) : " + target.getStatus());
+
+        title("12. 동시 예매 + 취소 - 취소된 좌석을 두고 스레드 20개가 경쟁");
+        Reservation freed = service.reserve(member, open, "E2");
+        service.cancelBySystem(freed.getId());
+        race(20, i -> service.reserve(member, open, "E2"));
+        System.out.println("E2 유효 예매 수 (1이어야 함) : " + service.getReservedSeats(open).stream()
+                .filter(seat -> seat.getName().equals("E2")).count());
+
+        title("13. 여러 회차 동시 예매 - 회차 5개에 같은 좌석을 각각 10명씩");
+        List<Schedule> schedules = java.util.stream.IntStream.range(0, 5)
+                .mapToObj(i -> new Schedule(10L + i, movie, screen, now.plusHours(10 + i), 10000)).toList();
+        race(50, i -> service.reserve(member, schedules.get(i % 5), "B2"));
+        schedules.forEach(sch -> System.out.println(sch.getId() + "번 회차 B2 점유 : " + service.getReservedSeats(sch).size()));
+
+        title("14. 예외 상황");
         expectError("형식 오류(3A)", () -> service.reserve(member, morning, "3A"));
         expectError("형식 오류(A)", () -> service.reserve(member, morning, "A"));
         expectError("빈 입력", () -> service.reserve(member, morning, "  "));
@@ -129,6 +164,37 @@ public class TestClass {
         expectError("회원 null", () -> service.reserve(null, morning, List.of(screen.getSeat(3, 3))));
         expectError("좌석 비어 있음", () -> service.reserve(member, morning, List.of()));
         expectError("좌석 목록 수정", () -> reservation.getSeats().add(new Seat(0, 0)));
+    }
+
+    private static void raceReserve(ReservationService service, Member member, Schedule schedule,
+                                    int threads, IntFunction<String> seatName) throws InterruptedException {
+        race(threads, i -> service.reserve(member, schedule, seatName.apply(i)));
+    }
+
+    private static void race(int threads, IntConsumer action) throws InterruptedException {
+        ExecutorService executor = Executors.newFixedThreadPool(threads);
+        CountDownLatch ready = new CountDownLatch(threads);
+        CountDownLatch start = new CountDownLatch(1);
+        AtomicInteger success = new AtomicInteger();
+        AtomicInteger fail = new AtomicInteger();
+        for (int i = 0; i < threads; i++) {
+            int index = i;
+            executor.submit(() -> {
+                ready.countDown();
+                try {
+                    start.await();
+                    action.accept(index);
+                    success.incrementAndGet();
+                } catch (RuntimeException | InterruptedException e) {
+                    fail.incrementAndGet();
+                }
+            });
+        }
+        ready.await();
+        start.countDown();
+        executor.shutdown();
+        executor.awaitTermination(10, TimeUnit.SECONDS);
+        System.out.println("성공 " + success.get() + "건, 실패 " + fail.get() + "건");
     }
 
     private static void title(String text) {

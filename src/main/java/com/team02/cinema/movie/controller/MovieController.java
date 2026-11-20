@@ -98,8 +98,9 @@ public class MovieController {
 
         try {
             Long id = inputView.readMovieId();
-            // 없는 영화면 여기서 바로 예외 (항목을 다 입력한 뒤에 실패하지 않도록 먼저 확인)
+            // 없는 영화나 스케줄이 있는 영화면 여기서 바로 예외 (항목을 다 입력한 뒤에 실패하지 않도록 먼저 확인)
             Movie current = movieService.findMovie(id);
+            movieService.checkUpdatable(id);
 
             // Enter만 누른 항목은 null -> 서비스에서 기존 값 유지
             String title = inputView.readTitleForUpdate(current.getTitle());
@@ -112,6 +113,9 @@ public class MovieController {
             System.out.println(updated.getId() + "번 영화 '" + updated.getTitle() + "'이(가) 수정되었습니다.");
         } catch (IllegalArgumentException e) {
             // 숫자가 아닌 입력, 없는 영화, 입력 변환 실패, Movie 검증 실패
+            System.out.println(e.getMessage());
+        } catch (IllegalStateException e) {
+            // 스케줄이 있는 영화
             System.out.println(e.getMessage());
         }
     }

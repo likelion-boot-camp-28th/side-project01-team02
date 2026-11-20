@@ -4,7 +4,11 @@ import java.time.LocalDate;
 import java.util.Scanner;
 
 public class InputView {
-    private final Scanner sc = new Scanner(System.in);
+    private final Scanner sc;
+
+    public InputView(Scanner sc) {
+        this.sc = sc;
+    }
 
     public String readLoginId(){
         System.out.print("아이디를 입력하세요 : ");

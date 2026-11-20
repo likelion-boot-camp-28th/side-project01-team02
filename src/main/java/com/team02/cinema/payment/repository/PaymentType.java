@@ -9,13 +9,10 @@ public enum PaymentType {
     /// 카드 결제
     CREDIT_CARD("신용카드"),
     DEBIT_CARD("체크카드"),
-    Bank_TRANSFER("계좌이체");
+    BANK_TRANSFER("계좌이체");
 
     private final String methodName;
-
-    PaymentType(String methodName) {
-        this.methodName = methodName;
-    }
+    PaymentType(String methodName) {this.methodName = methodName; }
 
     public enum BankType {
 
@@ -39,23 +36,14 @@ public enum PaymentType {
             this.paymentType = null;
         }
 
-        public void SetPayment(PaymentType paymentType) {
-            this.paymentType = paymentType;
-        }
-
-        public PaymentType getPaymentType() {
-            return paymentType;
-        }
-
-        public String getBankName() {
-            return bankName;
-        }
+        public void SetPayment(PaymentType paymentType) { this.paymentType = paymentType; }
+        public PaymentType getPaymentType() { return paymentType; }
+        public String getBankName() { return bankName;}
 
         @Override
         public String toString() {
-            return "======결제 수단 ======"
-                     + paymentType + " | " +
-                    "은행: " + bankName;
+            return "\n======결제 수단 ======\n"
+                     + paymentType + " | " + "은행: " + bankName;
         }
 
 

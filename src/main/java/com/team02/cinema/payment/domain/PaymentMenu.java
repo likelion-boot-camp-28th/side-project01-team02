@@ -31,7 +31,6 @@ public class PaymentMenu {
                       [3] 결제 취소 / 환불
                       [4] 내 쿠폰 조회
                       [5] 내 포인트 조회
-                      [6] 영화 리뷰 관리
                       [0] 이전 메뉴
                     ========================================
                     """);
@@ -56,9 +55,7 @@ public class PaymentMenu {
                 case 5:
 
                 break;
-                case 6:
 
-                break;
                 case 0:
 
                 break;

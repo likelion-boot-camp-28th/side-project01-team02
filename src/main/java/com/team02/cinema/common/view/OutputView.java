@@ -20,4 +20,12 @@ public class OutputView {
     public void printError(String message){
         System.out.println(message);
     }
+
+    public void printWelcome(String name){
+        System.out.println(name + "님, 환영합니다!");
+    }
+
+    public void printSignUpSuccess(){
+        System.out.println("회원가입 되었습니다.");
+    }
 }

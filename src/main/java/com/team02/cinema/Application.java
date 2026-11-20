@@ -16,9 +16,10 @@ public class Application {
     public static void main(String[] args) {
         MemberRepository memberRepository = new MemoryMemberRepository();
         MemberService memberService = new MemberService(memberRepository);
-        MemberController memberController = new MemberController(memberService);
-        InputView inputView = new InputView();
         OutputView outputView = new OutputView();
+        MemberController memberController = new MemberController(memberService,outputView);
+        InputView inputView = new InputView();
+
 
         boolean running = true;
         while(running){

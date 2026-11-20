@@ -4,6 +4,7 @@ import com.team02.cinema.movie.domain.Movie.Movie;
 import com.team02.cinema.movie.domain.schedule.Schedule;
 import com.team02.cinema.movie.service.ScheduleService;
 import com.team02.cinema.theater.domain.Screen;
+import com.team02.cinema.theater.service.TheaterService;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -18,15 +19,16 @@ import java.util.List;
 
 public class ScheduleCsvLoader {
 
-    private static final int COLUMN_COUNT = 4; // dayOffset,startTime,movieTitle,basePrice
+    private static final int COLUMN_COUNT = 5; // dayOffset,startTime,movieTitle,basePrice,screenNum
 
     private final ScheduleService scheduleService;
 
-    private final Screen screen;
+    // 줄마다 적힌 상영관 번호로 상영관(Screen)을 찾기 위해 사용
+    private final TheaterService theaterService;
 
-    public ScheduleCsvLoader(ScheduleService scheduleService, Screen screen) {
+    public ScheduleCsvLoader(ScheduleService scheduleService, TheaterService theaterService) {
         this.scheduleService = scheduleService;
-        this.screen = screen;
+        this.theaterService = theaterService;
     }
 
     // CSV를 읽어 스케줄을 등록하고, 등록에 성공한 스케줄 목록을 반환
@@ -58,7 +60,7 @@ public class ScheduleCsvLoader {
                 // 시각 형식 오류는 IllegalArgumentException이 아니라서 따로 잡도록 함
                 System.out.println("[초기 데이터] " + lineNumber + "번째 줄: 시각 형식이 잘못되었습니다.");
             } catch (IllegalArgumentException e) {
-                // 숫자 변환 실패, 없는 영화 제목, Schedule 검증 실패
+                // 숫자 변환 실패, 없는 영화 제목, 없는 상영관 번호, Schedule 검증 실패
                 System.out.println("[초기 데이터] " + lineNumber + "번째 줄: " + e.getMessage());
             } catch (IllegalStateException e) {
                 // 기존 스케줄과 상영 시간이 겹침
@@ -82,11 +84,13 @@ public class ScheduleCsvLoader {
         String startTimeText = values[1].trim();
         String movieTitle = values[2].trim();
         String basePriceText = values[3].trim();
+        String screenNumText = values[4].trim();
 
         // 문자열을 알맞은 타입으로 변환
         int dayOffset = Integer.parseInt(dayOffsetText);
         LocalTime time = LocalTime.parse(startTimeText);
         int basePrice = Integer.parseInt(basePriceText);
+        int screenNum = Integer.parseInt(screenNumText);
 
         // 오늘 날짜 + dayOffset 일 뒤의 날짜에 시각을 붙임
         LocalDate date = LocalDate.now().plusDays(dayOffset);
@@ -95,7 +99,10 @@ public class ScheduleCsvLoader {
         // 제목으로 영화 찾기
         Movie movie = findMovieByTitle(movies, movieTitle);
 
-        return register(movie.getId(), startTime, basePrice);
+        // 번호로 상영관 찾기 (없는 번호면 TheaterService가 IllegalArgumentException을 던짐)
+        Screen screen = theaterService.getScreen(screenNum);
+
+        return register(movie.getId(), screen, startTime, basePrice);
     }
 
     // 영화 목록에서 제목이 같은 영화를 찾음, 없으면 예외
@@ -109,7 +116,7 @@ public class ScheduleCsvLoader {
     }
 
     // 스케줄 등록
-    private Schedule register(Long movieId, LocalDateTime startTime, int basePrice) {
+    private Schedule register(Long movieId, Screen screen, LocalDateTime startTime, int basePrice) {
         return scheduleService.registerSchedule(movieId, screen, startTime, basePrice);
     }
 }

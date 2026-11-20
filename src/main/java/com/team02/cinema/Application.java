@@ -1,5 +1,6 @@
 package com.team02.cinema;
 
+import com.team02.cinema.common.view.InputView;
 import com.team02.cinema.member.controller.MemberController;
 import com.team02.cinema.member.repository.MemberRepository;
 import com.team02.cinema.member.repository.MemoryMemberRepository;
@@ -7,15 +8,14 @@ import com.team02.cinema.member.service.MemberService;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
-import java.util.Scanner;
 
 
 public class Application {
     public static void main(String[] args) {
-        Scanner sc = new Scanner(System.in);
         MemberRepository memberRepository = new MemoryMemberRepository();
         MemberService memberService = new MemberService(memberRepository);
         MemberController memberController = new MemberController(memberService);
+        InputView inputView = new InputView();
 
 
         boolean running = true;
@@ -24,9 +24,7 @@ public class Application {
             System.out.println("2. 로그인");
             System.out.println("3. 로그아웃");
             System.out.println("0. 종료");
-            System.out.print("번호를 입력하세요 : ");
-
-            String choice = sc.nextLine();
+            String choice = inputView.readMenu();
 
             switch (choice){
                 case "0" -> {
@@ -34,27 +32,20 @@ public class Application {
                     running = false;
                 }
                 case "1" -> {
-                    System.out.print("아이디를 입력하세요 : ");
-                    String id = sc.nextLine();
-                    System.out.print("비밀번호를 입력하세요 : ");
-                    String password = sc.nextLine();
-                    System.out.print("이름을 입력하세요 : ");
-                    String name = sc.nextLine();
-                    System.out.print("생년월일을 입력하세요(yyyy-MM-dd) : ");
+                    String id = inputView.readLoginId();
+                    String password = inputView.readPassword();
+                    String name = inputView.readName();
                     try {
-                        LocalDate birth = LocalDate.parse(sc.nextLine());
+                        LocalDate birth = inputView.readBirthDate();
                         memberController.signUp(id,password,name,birth);
                     } catch (DateTimeParseException e) {
                         System.out.println("생년월일 형식이 올바르지 않습니다. (예 : 2000-01-15)");
                     }
-
                 }
                 case "2" -> {
-                    System.out.print("아이디를 입력하세요 : ");
-                    String loginId = sc.nextLine();
-                    System.out.print("비밀번호를 입력하세요 : ");
-                    String password = sc.nextLine();
-                    memberController.login(loginId,password);
+                    String id = inputView.readLoginId();
+                    String password = inputView.readPassword();
+                    memberController.login(id,password);
                 }
                 case "3" -> {
                     if (memberController.getLoginMember().isEmpty()){

@@ -43,6 +43,8 @@ public class MovieService {
                              LocalDate releaseDate) {
         Movie existing = movieRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 영화입니다. id=" + id));
+        // 스케줄이 있는 영화는 어떤 항목도 바꿀 수 없다
+        checkUpdatable(id);
 
         Movie updated = new Movie(
                 id,
@@ -53,6 +55,16 @@ public class MovieService {
                 Objects.requireNonNullElse(releaseDate, existing.getReleaseDate())
         );
         return movieRepository.save(updated);
+    }
+
+    // 영화 수정 가능 여부 확인: 스케줄이 하나라도 있는 영화는 수정할 수 없다
+    // (스케줄은 등록 당시의 영화 정보를 그대로 들고 있으므로, 영화를 바꾸면 스케줄과 정보가 어긋남)
+    // Controller에서 수정 항목을 입력받기 전에 먼저 호출할 수 있도록 public으로 둔다
+    public void checkUpdatable(Long id) {
+        if (scheduleRepository.existsByMovieId(id)) {
+            throw new IllegalStateException(
+                    "상영 스케줄이 있는 영화는 수정할 수 없습니다. 변경이 필요하면 새 영화로 등록해 주세요. id=" + id);
+        }
     }
 
     // 영화 삭제: 없는 영화인지 먼저 확인하고, 스케줄이 있는 영화는 삭제할 수 없다

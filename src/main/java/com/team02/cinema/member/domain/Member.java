@@ -12,11 +12,15 @@ public class Member {
     private int point;
 
     public Member(String loginId, String password, String name, LocalDate birthDate) {
+        this(loginId, password, name, birthDate, Role.USER);
+    }
+
+    public Member(String loginId, String password, String name, LocalDate birthDate, Role role) {
         this.loginId = loginId;
         this.password = password;
         this.name = name;
         this.birthDate = birthDate;
-        this.role = Role.USER;
+        this.role = role;
         this.point = 0;
     }
 

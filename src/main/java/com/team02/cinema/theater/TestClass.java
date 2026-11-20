@@ -28,22 +28,22 @@ public class TestClass {
         Member member = new Member("test", "1234", "홍길동", LocalDate.of(2000, 1, 1));
 
         title("2. 예약 전 - 1관 오전 회차");
-        view.printSeats(morning.getSeats());
+        view.printSeats(service.getSeats(morning));
 
         title("3. 오전 회차 A1, B3, E6 예약");
         service.reserveSeat(morning, 0, 0);
         service.reserveSeat(morning, 1, 2);
         service.reserveSeat(morning, 4, 5);
-        view.printSeats(morning.getSeats());
+        view.printSeats(service.getSeats(morning));
         System.out.println("빈 좌석 수 : " + service.getAvailableSeats(morning).size());
 
         title("4. 같은 좌석, 저녁 회차는 영향 없음");
-        view.printSeats(evening.getSeats());
+        view.printSeats(service.getSeats(evening));
         System.out.println("빈 좌석 수 : " + service.getAvailableSeats(evening).size());
 
         title("5. 오전 B3 취소");
         service.cancelSeat(morning, 1, 2);
-        view.printSeats(morning.getSeats());
+        view.printSeats(service.getSeats(morning));
         System.out.println("빈 좌석 수 : " + service.getAvailableSeats(morning).size());
 
         title("6. 좌석 단건 조회");

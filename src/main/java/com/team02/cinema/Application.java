@@ -22,9 +22,13 @@ import com.team02.cinema.movie.view.MovieInputView;
 import com.team02.cinema.movie.view.MovieOutputView;
 import com.team02.cinema.movie.view.ScheduleInputView;
 import com.team02.cinema.movie.view.ScheduleOutputView;
+import com.team02.cinema.reservation.controller.ReservationController;
 import com.team02.cinema.reservation.repository.MemoryReservationRepository;
 import com.team02.cinema.reservation.service.ReservationService;
+import com.team02.cinema.reservation.view.ReservationInputView;
+import com.team02.cinema.reservation.view.ReservationOutputView;
 import com.team02.cinema.theater.service.TheaterService;
+import com.team02.cinema.theater.view.TheaterView;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
@@ -58,6 +62,8 @@ public class Application {
                 new MovieInputView(scanner), movieOutputView, scheduleOutputView);
         ScheduleController scheduleController = new ScheduleController(scheduleService, movieService, theaterService,
                 new ScheduleInputView(scanner), scheduleOutputView, movieOutputView);
+        ReservationController reservationController = new ReservationController(reservationService,new TheaterView() ,
+                new ReservationInputView(scanner), new ReservationOutputView());
 
         // ===== 초기 데이터 =====
         new MovieDataInitializer(movieService, scheduleService, theaterService).init();
@@ -116,6 +122,22 @@ public class Application {
                 }
                 case "6" -> movieController.showMovies();
                 case "7" -> movieController.showMovieDetail();
+                case "8" -> {
+                    if (memberController.getLoginMember().isEmpty()) {
+                        outputView.printError(ErrorMessage.NOT_LOGGED_IN.getMessage());
+                    } else {
+                        Member member = memberController.getLoginMember().get();
+                        reservationController.showMyReservations(member);
+                    }
+                }
+                case "9" -> {
+                    if (memberController.getLoginMember().isEmpty()) {
+                        outputView.printError(ErrorMessage.NOT_LOGGED_IN.getMessage());
+                    } else {
+                        Member member = memberController.getLoginMember().get();
+                        reservationController.cancel(member);
+                    }
+                }
                 default -> outputView.printError(ErrorMessage.INVALID_MENU.getMessage());
             }
 

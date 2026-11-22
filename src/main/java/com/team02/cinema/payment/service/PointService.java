@@ -8,15 +8,14 @@ import java.util.*;
 public class PointService {
 
     /// // 회원번호 -> 현재 포인트 잔액 : 간편 조회
-    private final Map<Integer, Integer> resultBalances = new HashMap<>();
-
+    private final Map<Long, Integer> resultBalances = new HashMap<>();
 
     /// // 모든 회원의 포인트 사용 내역
     private final List<Point> pointHistories = new ArrayList<>();
 
 
     /// 초기 포인트 생성
-    public void setInitPoint(int memberId, int point) {
+    public void setInitPoint(long memberId, int point) {
 
         if (point < 0) throw new IllegalArgumentException("초기 포인트는 음수일 수 없습니다.");
 
@@ -26,12 +25,12 @@ public class PointService {
 
 
     /// 현재 보유 포인트 조회
-    public int getBalance(int memberId) {
+    public int getBalance(long memberId) {
         return resultBalances.getOrDefault(memberId, 0);  /// 없으면 0
     }
 
     /// 포인트 사용
-    public void usePoint(int memberId, int amount, String paymentId) {
+    public void usePoint(long memberId, int amount, String paymentId) {
 
         if (amount < 0) { /// 포인트 사용 금액 0 보다 커야 된다.
             throw new IllegalArgumentException("포인트 사용금액을 잘못 입력하셨습니다.");
@@ -51,7 +50,7 @@ public class PointService {
     }
 
     /// 포인트 적립
-    public void earnPoint(int memberId, int amount, String paymentId) {
+    public void earnPoint(long memberId, int amount, String paymentId) {
         if (amount < 0) {
             throw new IllegalArgumentException("잘못된 적립 포인트 입니다.");
         }
@@ -66,14 +65,14 @@ public class PointService {
 
 
     /// 포인트 내역 저장
-    private void addHistory(int memberId, String paymentId, int amount, PointType pointType) {
+    private void addHistory(long memberId, String paymentId, int amount, PointType pointType) {
 
         Point point = new Point(memberId, paymentId, amount, pointType);
         pointHistories.add(point);  /// 포인트 사용 내역 추가.
     }
 
     /// 환불 시 사용 포인트 반환
-    public int restorePoint(int memberId, String paymentId) {
+    public int restorePoint(long memberId, String paymentId) {
 
         ///이미 반환된 결제인지 확인 ->> 환불 내역 존재 -> true
         boolean alreadyRestored = pointHistories.stream()
@@ -89,7 +88,7 @@ public class PointService {
                 .filter(point -> point.getMemberId() == memberId)
                 .filter(point -> point.getPaymentId().equals(paymentId))
                 .filter(point -> point.getType() == PointType.USE)
-                .mapToInt(point -> point.getAmount()).sum();
+                .mapToInt(point -> -point.getAmount()).sum();
 
         if (result <= 0) {
             return 0;
@@ -104,7 +103,7 @@ public class PointService {
     }
 
     /// 환불 시 적립 포인트 회수
-    public int revokePoints(int memberId, String paymentId) {
+    public int revokePoints(long memberId, String paymentId) {
 
         /// 이미 회수 했는지
         boolean alreadyRevoked = pointHistories.stream()
@@ -136,7 +135,7 @@ public class PointService {
 
 
     /// 회원별 포인트 내역 조회
-    public List<Point> getPointHistories(int memberId) {
+    public List<Point> getPointHistories(long memberId) {
 
         return pointHistories.stream()
                 .filter(point -> point.getMemberId() == memberId)
@@ -145,7 +144,7 @@ public class PointService {
 
 
     /// 결제번호별 포인트 내역 조회
-    public List<Point> getPaymentPointHistories(int memberId, String paymentId) {
+    public List<Point> getPaymentPointHistories(long memberId, String paymentId) {
 
         return pointHistories.stream()
                 .filter(point -> point.getMemberId() == memberId)
@@ -155,7 +154,7 @@ public class PointService {
     }
 
     /// 회원별 포인트 사용 내역 조회
-    public List<Point> getUsePointHistoies(int memberId) {
+    public List<Point> getUsePointHistoies(long memberId) {
 
         return pointHistories.stream().filter(point -> point.getMemberId() == memberId)
                 .filter(point -> point.getType() == PointType.USE)

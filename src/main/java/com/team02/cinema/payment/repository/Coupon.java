@@ -1,9 +1,14 @@
 package com.team02.cinema.payment.repository;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Locale;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class Coupon {
+    private static final AtomicInteger NEXT_COUPON_NUMBER = new AtomicInteger(1);
 
     //[ 내 쿠폰 조회 ]
     //
@@ -21,29 +26,24 @@ public class Coupon {
     // 쿠폰마다 부여되는 고유번호
     // 예: 1001, 1002
     private final int couponId;
-
     // 쿠폰을 소유한 회원의 고유번호
     // 예: 회원번호 1번이 보유한 쿠폰
-    private final int memberId;
-
+    private final long memberId;
     // 쿠폰 이름
     // 예: "신규회원 할인쿠폰"
     private final CouponName name;
-
     // 쿠폰 할인금액
     // 예: 3000이면 3,000원 할인
     private final int discountAmount;
-
     // 쿠폰의 사용 만료 날짜
     // 예: 2026-12-31
     private final LocalDateTime expirationDate;
-
     // 쿠폰 사용 여부
     // false = 미사용, true = 사용 완료
     private boolean used;
 
 
-    public Coupon(LocalDateTime expirationDate, int discountAmount, CouponName name, int memberId, int couponId) {
+    public Coupon(LocalDateTime expirationDate, int discountAmount, CouponName name, long memberId, int couponId) {
         this.expirationDate = expirationDate;
         this.discountAmount = discountAmount;
         this.name = name;
@@ -55,12 +55,47 @@ public class Coupon {
         }
     }
 
+    private static LocalDate lastIssuedDate;
+    private static int dailySequence;
+
+    /// 쿠폰 아이디 생성
+    private static int generateCouponId() {
+        LocalDate today = LocalDate.now();
+
+        if (!today.equals(lastIssuedDate)) {
+            lastIssuedDate = today;
+            dailySequence = 0;
+        }
+
+        if (dailySequence >= 10) {
+            throw new IllegalStateException("하루 쿠폰 발급 한도는 10개입니다.");
+        }
+
+        int dateNumber = (today.getYear() % 100) * 10_000
+                + today.getMonthValue() * 100
+                + today.getDayOfMonth();
+
+        return dateNumber * 1_000 + ++dailySequence;
+    }
+
+
+    public static Coupon issue(CouponName name, long memberId) {
+        int fixedDiscount = switch (name) {
+            case FIXED_3000, WELCOME_FLAT_3000 -> 3_000;
+            case EARLY_BIRD -> 2_000;
+            case PERCENT_20 -> 20;
+            case FREE_TICKET -> 0;
+        };
+
+        return new Coupon(LocalDateTime.now().plusDays(7), fixedDiscount, name, memberId, generateCouponId());
+    }
+
 
     public int getCouponId() {
         return couponId;
     }
 
-    public int getMemberId() {
+    public long getMemberId() {
         return memberId;
     }
 

@@ -13,6 +13,7 @@ public enum PaymentType {
 
     private final String methodName;
     PaymentType(String methodName) {this.methodName = methodName; }
+    public String getMethodName() { return methodName; }
 
     public enum BankType {
 
@@ -36,7 +37,7 @@ public enum PaymentType {
             this.paymentType = null;
         }
 
-        public void SetPayment(PaymentType paymentType) { this.paymentType = paymentType; }
+        public void setPayment(PaymentType paymentType) { this.paymentType = paymentType; }
         public PaymentType getPaymentType() { return paymentType; }
         public String getBankName() { return bankName;}
 

@@ -1,5 +1,7 @@
 package com.team02.cinema.payment.repository;
 
+import java.time.LocalDateTime;
+
 public enum CouponName {
 
     FREE_TICKET("1인 무료 관람권"),
@@ -14,6 +16,7 @@ public enum CouponName {
     CouponName(String korName) {
         this.korName = korName;
     }
+
 
     @Override
     public String toString() {

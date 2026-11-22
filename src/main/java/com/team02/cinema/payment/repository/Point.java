@@ -4,11 +4,11 @@ package com.team02.cinema.payment.repository;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
-public class Point  {
+public class Point {
 
 
     // 포인트를 소유한 회원번호
-    private int memberId;
+    private long memberId;
 
     // 관련 결제번호
     private String paymentId;
@@ -25,7 +25,7 @@ public class Point  {
     // 포인트 처리 날짜 및 시간
     private LocalDateTime createdAt;
 
-    public int getMemberId() {
+    public long getMemberId() {
         return memberId;
     }
 
@@ -45,11 +45,12 @@ public class Point  {
         return createdAt;
     }
 
-    public Point(int memberId, String paymentId, int amount, PointType type) {
+    public Point(long memberId, String paymentId, int amount, PointType type) {
         this.type = type;
         this.amount = amount;
         this.paymentId = paymentId;
         this.memberId = memberId;
+        this.createdAt = LocalDateTime.now();
     }
 
     @Override
@@ -63,7 +64,6 @@ public class Point  {
     public int hashCode() {
         return Objects.hash(memberId, paymentId, amount, type, createdAt);
     }
-
 
 
 }

@@ -1,5 +1,8 @@
 package com.team02.cinema.payment.repository;
 
+import com.team02.cinema.member.domain.Member;
+import com.team02.cinema.reservation.domain.Reservation;
+
 import java.time.LocalDateTime;
 import java.util.Objects;
 
@@ -19,7 +22,7 @@ public class Payment {
 
     // 결제와 연결된 영화 예매 객체
     // 영화 제목, 상영관, 좌석 등의 정보를 가져올 때 사용
-    /// private final Reservation reservation;  (나중에 연동)
+    private final Reservation reservation;
 
 
     private final Integer couponId;
@@ -59,8 +62,9 @@ public class Payment {
     // 예: "결제 완료" (false), "환불 완료" (true)
     private boolean refunded;
 
+
     public Payment(String paymentId, Integer couponId, int originalAmount, int couponDiscount, int usedPoints
-            , int finalAmount, int earnedPoints, int remainingPoints, PaymentType.BankType paymentMethod) {
+            , int finalAmount, int earnedPoints, int remainingPoints, PaymentType.BankType paymentMethod, Reservation reservation) {
         this.paymentId = paymentId;
         this.couponId = couponId;
         this.originalAmount = originalAmount;
@@ -71,27 +75,66 @@ public class Payment {
         this.remainingPoints = remainingPoints;
         this.paymentMethod = paymentMethod;
         this.paidAt = LocalDateTime.now();
+        this.reservation = reservation;
+    }
+
+    public Reservation getReservation() {
+        return reservation;
+    }
+
+    public String getPaymentId() {
+        return paymentId;
+    }
+
+    //    public Reservation getReservation() { return reservation; }
+    public Integer getCouponId() {
+        return couponId;
+    }
+
+    public int getOriginalAmount() {
+        return originalAmount;
+    }
+
+    public int getCouponDiscount() {
+        return couponDiscount;
+    }
+
+    public int getUsedPoints() {
+        return usedPoints;
+    }
+
+    public int getFinalAmount() {
+        return finalAmount;
+    }
+
+    public int getEarnedPoints() {
+        return earnedPoints;
+    }
+
+    public int getRemainingPoints() {
+        return remainingPoints;
+    }
+
+    public PaymentType.BankType getPaymentMethod() {
+        return paymentMethod;
+    }
+
+    public LocalDateTime getPaidAt() {
+        return paidAt;
+    }
+
+    public boolean isRefunded() {
+        return refunded;
+    }
+
+    public String getStatus() {
+        return refunded ? "환불 완료" : "결제 완료";
     }
 
 
-    public String getPaymentId() { return paymentId; }
-//    public Reservation getReservation() { return reservation; }
-    public Integer getCouponId() { return couponId; }
-    public int getOriginalAmount() { return originalAmount; }
-    public int getCouponDiscount() { return couponDiscount; }
-    public int getUsedPoints() { return usedPoints; }
-    public int getFinalAmount() { return finalAmount; }
-    public int getEarnedPoints() { return earnedPoints; }
-    public int getRemainingPoints() { return remainingPoints; }
-    public PaymentType.BankType getPaymentMethod() { return paymentMethod; }
-    public LocalDateTime getPaidAt() { return paidAt; }
-    public boolean isRefunded() { return refunded; }
-    public String getStatus() { return refunded ? "환불 완료" : "결제 완료"; }
-
-
     /// 환불 상태 변경
-    public void refund(){
-        if (refunded){
+    public void refund() {
+        if (refunded) {
             throw new IllegalArgumentException("이미 환불된 결제 입니다.");
         }
         refunded = true;

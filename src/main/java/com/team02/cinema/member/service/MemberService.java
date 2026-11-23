@@ -9,9 +9,11 @@ import java.util.Optional;
 
 public class MemberService {
     private final MemberRepository memberRepository;
+    private final MemberReservationChecker reservationChecker;
 
-    public MemberService(MemberRepository memberRepository) {
+    public MemberService(MemberRepository memberRepository, MemberReservationChecker reservationChecker) {
         this.memberRepository = memberRepository;
+        this.reservationChecker = reservationChecker;
     }
 
     public void signUp(String loginId, String password, String name, LocalDate birthDate){
@@ -33,5 +35,12 @@ public class MemberService {
             throw new IllegalArgumentException(ErrorMessage.LOGIN_FAILED.getMessage());
         }
         return member;
+    }
+
+    public void withdraw(Member member){
+        if (reservationChecker.hasConfirmedFutureReservation(member)){
+            throw new IllegalStateException(ErrorMessage.HAS_CONFIRMED_RESERVATION.getMessage());
+        }
+        memberRepository.delete(member.getLoginId());
     }
 }

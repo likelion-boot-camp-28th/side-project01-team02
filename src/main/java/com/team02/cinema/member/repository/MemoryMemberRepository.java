@@ -20,4 +20,9 @@ public class MemoryMemberRepository implements MemberRepository{
     public Optional<Member> findByLoginId(String loginId){
         return Optional.ofNullable(members.get(loginId));
     }
+
+    @Override
+    public void delete(String loginId) {
+        members.remove(loginId);
+    }
 }

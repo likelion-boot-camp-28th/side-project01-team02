@@ -51,4 +51,14 @@ public class MemberController {
     public Optional<Member> getLoginMember(){
         return Optional.ofNullable(loginMember);
     }
+
+    public void withdraw(){
+        try {
+            memberService.withdraw(loginMember);
+            logout();
+            outputView.printWithdraw();
+        } catch (IllegalStateException e) {
+            outputView.printError(e.getMessage());
+        }
+    }
 }

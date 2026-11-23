@@ -66,6 +66,12 @@ public class ScheduleService {
         scheduleRepository.deleteById(id);
     }
 
+    // 스케줄 단건 조회: 예매하기에서 상영 번호로 스케줄을 찾을 때 사용
+    public Schedule findSchedule(Long id) {
+        return scheduleRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("[ERROR] 존재하지 않는 스케줄입니다. id=" + id));
+    }
+
     // 전체 스케줄 목록 (관리자용): 지난 상영도 확인·삭제할 수 있도록 모두 보여주고 시간순 정렬만 한다
     public List<Schedule> findAllSchedules() {
         return sortByStartTime(scheduleRepository.findAll());

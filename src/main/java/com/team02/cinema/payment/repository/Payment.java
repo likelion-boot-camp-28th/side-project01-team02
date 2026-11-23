@@ -134,9 +134,6 @@ public class Payment {
 
     /// 환불 상태 변경
     public void refund() {
-        if (refunded) {
-            throw new IllegalArgumentException("이미 환불된 결제 입니다.");
-        }
         refunded = true;
     }
 

@@ -7,6 +7,8 @@ import com.team02.cinema.payment.domain.PaymentMenu;
 import com.team02.cinema.payment.service.CouponService;
 import com.team02.cinema.payment.service.PaymentService;
 import com.team02.cinema.payment.service.PointService;
+import com.team02.cinema.reservation.repository.MemoryReservationRepository;
+import com.team02.cinema.reservation.service.ReservationService;
 
 import java.util.Scanner;
 
@@ -16,7 +18,9 @@ public class PaymentMain {
 
     CouponService couponService = new CouponService();
     PointService pointService = new PointService();
-    PaymentService paymentService = new PaymentService(couponService, pointService);
+    ReservationService reservationService = new ReservationService(new MemoryReservationRepository());
+
+    PaymentService paymentService = new PaymentService(couponService, pointService,reservationService);
 
     CouponController couponController = new CouponController(couponService);
     PointController pointController = new PointController(pointService);

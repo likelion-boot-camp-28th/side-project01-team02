@@ -75,7 +75,7 @@ public class Application {
                 new ReservationInputView(scanner), new ReservationOutputView());
         CouponService couponService = new CouponService();
         PointService pointService = new PointService();
-        PaymentService paymentService = new PaymentService(couponService, pointService);
+        PaymentService paymentService = new PaymentService(couponService, pointService, reservationService);
         CouponController couponController = new CouponController(couponService);
         PointController pointController = new PointController(pointService);
         PaymentController paymentController = new PaymentController(paymentService, couponController, pointController);

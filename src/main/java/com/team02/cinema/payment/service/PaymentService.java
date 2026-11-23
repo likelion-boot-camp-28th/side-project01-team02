@@ -1,8 +1,10 @@
 package com.team02.cinema.payment.service;
 
+import com.team02.cinema.member.domain.Member;
 import com.team02.cinema.payment.repository.Payment;
 import com.team02.cinema.payment.repository.PaymentType;
 import com.team02.cinema.reservation.domain.Reservation;
+import com.team02.cinema.reservation.service.ReservationService;
 
 
 import java.time.LocalDate;
@@ -22,14 +24,16 @@ public class PaymentService {
     /// 결제번호 -> 회원 번호
     private final Map<String, Long> paymentOwners = new HashMap<>();
 
-
     /// // 결제 처리 및 영수증
     private final CouponService couponService;
     private final PointService pointService;
+    private final ReservationService reservationService;
 
-    public PaymentService(CouponService couponService, PointService pointService) {
+
+    public PaymentService(CouponService couponService, PointService pointService, ReservationService reservationService) {
         this.couponService = couponService;
         this.pointService = pointService;
+        this.reservationService = reservationService;
     }
 
 
@@ -158,9 +162,15 @@ public class PaymentService {
     public Payment refund(long memberId, String paymentId) {
 
         Payment payment = findPayment(memberId, paymentId);
+        Reservation reservation = payment.getReservation();
+
 
         if (payment.isRefunded()) { /// 환불 검사
             throw new IllegalArgumentException("이미 환불된 결제 입니다.");
+        }
+
+        if (reservation == null || reservation.getMember().getId() != memberId) {
+            throw new IllegalArgumentException("본인의 예매에 연결된 결제만 환불할 수 있습니다.");
         }
 
         int currentBalance = pointService.getBalance(memberId);
@@ -184,7 +194,30 @@ public class PaymentService {
         }
 
         payment.refund();
+        cancelReservation(reservation.getMember(), reservation.getId());
 
         return payment;
     }
+
+    /// 예약 취소
+    public void cancelReservation(Member member, Long reservationId) {
+
+        Reservation reservation = reservationService.getReservation(reservationId);
+
+        List<Payment> linkedPayments = getCompletedPayment(member.getId()).stream()
+                .filter(payment -> payment.getReservation() != null)
+                .filter(payment -> reservationId.equals(payment.getReservation().getId()))
+                .toList();
+
+        if (linkedPayments.size() > 1) {
+            throw new IllegalStateException("이 예매에 결제가 여러 건 연결되어 있습니다.");
+        }
+
+        if (!linkedPayments.isEmpty()) {
+            Payment payment = linkedPayments.get(0);
+            refund(member.getId(), payment.getPaymentId());
+        }
+        reservation.cancel();
+    }
+
 }

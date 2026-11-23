@@ -32,6 +32,7 @@ import com.team02.cinema.payment.service.PaymentService;
 import com.team02.cinema.payment.service.PointService;
 import com.team02.cinema.reservation.controller.ReservationController;
 import com.team02.cinema.reservation.domain.Reservation;
+import com.team02.cinema.reservation.domain.ReservationStatus;
 import com.team02.cinema.reservation.repository.MemoryReservationRepository;
 import com.team02.cinema.reservation.service.ReservationService;
 import com.team02.cinema.reservation.view.ReservationInputView;
@@ -166,6 +167,9 @@ public class Application {
                                 Reservation reservation = reservationController.reserve(member, schedule);
                                 if (reservation != null) {
                                     paymentMenu.runMemberId(member, scanner, reservation);
+                                    if (reservation.getStatus() == ReservationStatus.PENDING) {
+                                        reservationService.cancelBySystem(reservation.getId());
+                                    }
                                 }
                             } catch (IllegalArgumentException e) {
                                 outputView.printError(e.getMessage());

@@ -1,6 +1,7 @@
 package com.team02.cinema.payment.service;
 
 import com.team02.cinema.payment.repository.Coupon;
+import com.team02.cinema.payment.repository.CouponName;
 
 import java.util.Comparator;
 import java.util.LinkedHashMap;
@@ -26,7 +27,7 @@ public class CouponService {
     }
 
     /// 회원이 가진 쿠폰 조회
-    public List<Coupon> getMyCoupons(int memberId) {
+    public List<Coupon> getMyCoupons(long memberId) {
 
         return coupons.values().stream()
                 .filter(coupon -> coupon.getMemberId() == memberId)
@@ -35,7 +36,7 @@ public class CouponService {
     }
 
     /// 사용 가능한 쿠폰 조회
-    public List<Coupon> getAvailableCoupons(int memberId) {
+    public List<Coupon> getAvailableCoupons(long memberId) {
         return coupons.values().stream()
                 .filter(coupon -> coupon.getMemberId() == memberId)
                 .filter(coupon -> coupon.isAvailable())
@@ -45,7 +46,7 @@ public class CouponService {
 
 
     /// 사용 가능한 쿠폰 갯수
-    public long countAvailableCoupon(int memberId) {
+    public long countAvailableCoupon(long memberId) {
         return coupons.values().stream()
                 .filter(coupon -> coupon.getMemberId() == memberId)
                 .filter(coupon -> coupon.isAvailable()).count();
@@ -59,7 +60,7 @@ public class CouponService {
      * @param ticketAmount 티켓 원가
      * @return
      */
-    public int calculateDiscount(int memberId, int coupoonId, int ticketAmount) {
+    public int calculateDiscount(long memberId, int coupoonId, int ticketAmount) {
 
         if (coupoonId == 0) return 0;
 
@@ -69,13 +70,19 @@ public class CouponService {
             throw new IllegalArgumentException("사용 할 수 없는 쿠폰입니다. ");
         }
 
+        int discount = coupon.getDiscountAmount();
+        if (coupon.getName() == CouponName.PERCENT_20) {
+            discount = (int) ((long) ticketAmount * discount / 100);
+        }
+
+
         /// 할인금액이 티켓 금액을 넘지 않도록 제한 : - 금액 방지
-        return Math.min(coupon.getDiscountAmount(), ticketAmount);
+        return Math.min(discount, ticketAmount);
 
     }
 
     /// 해당 쿠폰 ->> 쿠폰 조회 및 소유자 검사
-    public Coupon findCoupon(int memberId, int couponId) {
+    public Coupon findCoupon(long memberId, int couponId) {
 
         Coupon coupon = coupons.get(couponId);  ///  쿠폰 번호 ->> 쿠폰 존재 여부
         if (coupon == null || coupon.getMemberId() != memberId) {  /// 해당 쿠폰 보유 id == 회원 id 체크
@@ -88,7 +95,7 @@ public class CouponService {
 
 
     /// 결제 성공 시 쿠폰 사용
-    public void useCoupon(int memberId, int couponId) {
+    public void useCoupon(long memberId, int couponId) {
 
         if (couponId == 0) {
             return;
@@ -99,13 +106,11 @@ public class CouponService {
     }
 
     /// 쿠폰 복구
-    public void restoreCoupon(int memberId, int couponId) {
+    public void restoreCoupon(long memberId, int couponId) {
         if (couponId == 0) return;
 
         Coupon coupon = findCoupon(memberId, couponId);
         coupon.restore();
 
     }
-
-
 }

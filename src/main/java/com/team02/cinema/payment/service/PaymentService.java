@@ -2,6 +2,7 @@ package com.team02.cinema.payment.service;
 
 import com.team02.cinema.payment.repository.Payment;
 import com.team02.cinema.payment.repository.PaymentType;
+import com.team02.cinema.reservation.domain.Reservation;
 
 
 import java.time.LocalDate;
@@ -19,7 +20,7 @@ public class PaymentService {
     Map<String, Payment> payments = new LinkedHashMap<>();
 
     /// 결제번호 -> 회원 번호
-    private final Map<String, Integer> paymentOwners = new HashMap<>();
+    private final Map<String, Long> paymentOwners = new HashMap<>();
 
 
     /// // 결제 처리 및 영수증
@@ -38,7 +39,7 @@ public class PaymentService {
 
 
     ///  결제 처리
-    public Payment pay(int memberId, int originalAmount, Integer couponId, int usePoint, PaymentType.BankType paymentType) {
+    public Payment pay(long memberId, int originalAmount, Integer couponId, int usePoint, PaymentType.BankType paymentType, Reservation reservation) {
 
 
         /// 결제 금액 검증
@@ -93,7 +94,7 @@ public class PaymentService {
 
 
         Payment payment = new Payment(paymentId, selectCouponId, originalAmount,
-                couponDiscount, usePoint, finalAmount, earnedPoints, earnedPoints, paymentType);
+                couponDiscount, usePoint, finalAmount, earnedPoints, remainingPoint, paymentType, reservation);
 
 
         payments.put(paymentId, payment);
@@ -104,26 +105,26 @@ public class PaymentService {
         return payment;
     }
 
-    public Payment pay(int memberId, int originalAmount, int usePoint, PaymentType.BankType paymentType) {
-        return pay(memberId, originalAmount, null, usePoint, paymentType);
+    public Payment pay(long memberId, int originalAmount, int usePoint, PaymentType.BankType paymentType, Reservation reservation) {
+        return pay(memberId, originalAmount, null, usePoint, paymentType, reservation);
 
     }
 
 
     /// 결제번호로 조회
-    public Payment findPayment(int memberId, String paymentId) {
+    public Payment findPayment(long memberId, String paymentId) {
 
         Payment payment = payments.get(paymentId);
 
         if (payment == null) {
-            System.out.println("해당 결제 내역을 찾을 수 없습니다.");
+            throw new IllegalArgumentException("해당 결제 내역을 찾을 수 없습니다.");
         }
 
         return payment;
     }
 
     /// 회원별 전체 결제 내역 조회
-    public List<Payment> getMyPayments(int memberId) {
+    public List<Payment> getMyPayments(long memberId) {
         return payments.values().stream()
                 .filter(payment -> paymentOwners.get(payment.getPaymentId()) == memberId)
                 .sorted(Comparator.comparing(Payment::getPaidAt).reversed()).toList();
@@ -131,21 +132,21 @@ public class PaymentService {
     }
 
     /// 결제 완료 내역 조회
-    public List<Payment> getCompletedPayment(int memberId) {
+    public List<Payment> getCompletedPayment(long memberId) {
 
         return getMyPayments(memberId).stream()
                 .filter(payment -> !payment.isRefunded()).toList();
     }
 
     /// 환불 완료 내역 조회
-    public List<Payment> getRefundedPayments(int memberId) {
+    public List<Payment> getRefundedPayments(long memberId) {
 
         return getMyPayments(memberId).stream()
                 .filter(payment -> payment.isRefunded()).toList();
     }
 
     /// 총 결제 금액
-    public int getTotalPaidAmount(int memberId) {
+    public int getTotalPaidAmount(long memberId) {
 
         return getCompletedPayment(memberId).stream()
                 .mapToInt(payment -> payment.getFinalAmount()).sum();
@@ -154,7 +155,7 @@ public class PaymentService {
     }
 
     /// 환불 처리
-    public Payment refund(int memberId, String paymentId) {
+    public Payment refund(long memberId, String paymentId) {
 
         Payment payment = findPayment(memberId, paymentId);
 
@@ -162,14 +163,19 @@ public class PaymentService {
             throw new IllegalArgumentException("이미 환불된 결제 입니다.");
         }
 
-        int expectedBalance = pointService.getBalance(memberId) + payment.getUsedPoints();
+        int currentBalance = pointService.getBalance(memberId);
+        int expectedBalance = currentBalance + payment.getUsedPoints();
+        int earnedPoints = payment.getEarnedPoints();
 
-        if (expectedBalance < payment.getEarnedPoints()) {
 
+        if (expectedBalance < earnedPoints) {
+
+            throw new IllegalStateException("적립 포인트를 회수하기에 잔액이 부족하여 환불할 수 없습니다.");
         }
-
-        pointService.revokePoints(memberId, paymentId);
-        pointService.restorePoint(memberId, paymentId);
+        if (payment.getUsedPoints() > 0)
+            pointService.restorePoint(memberId, paymentId);
+        if (payment.getEarnedPoints() > 0)
+            pointService.revokePoints(memberId, paymentId);
 
 
         /// 쿠폰 복구

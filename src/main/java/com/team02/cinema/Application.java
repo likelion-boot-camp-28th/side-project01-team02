@@ -52,7 +52,7 @@ public class Application {
         MemberRepository memberRepository = new MemoryMemberRepository();
         memberRepository.save(new Member("admin", "admin1234", "관리자", LocalDate.of(1990,1,1), Role.ADMIN));
         ReservationService reservationService = new ReservationService(new MemoryReservationRepository());
-        MemberService memberService = new MemberService(memberRepository, member -> false);
+        MemberService memberService = new MemberService(memberRepository, reservationService::hasUpcomingConfirmed);
         OutputView outputView = new OutputView();
             MemberController memberController = new MemberController(memberService,outputView);
         InputView inputView = new InputView(scanner);

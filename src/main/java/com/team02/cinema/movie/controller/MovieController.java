@@ -46,7 +46,8 @@ public class MovieController {
     }
 
     // 영화 상세 조회: 영화 정보 + 그 영화의 상영 스케줄 목록(잔여 좌석 수 포함)
-    public void showMovieDetail() {
+    // 예매 가능한 상영을 보여줬으면 true, 아니면(잘못된 입력, 없는 영화, 상영 없음) false
+    public boolean showMovieDetail() {
         // 번호를 고르기 쉽게 목록을 먼저 보여줌
         showMovies();
 
@@ -59,7 +60,7 @@ public class MovieController {
             List<Schedule> schedules = scheduleService.findUpcomingSchedulesByMovie(id);
             if (schedules.isEmpty()) {
                 System.out.println("예매 가능한 상영 스케줄이 없습니다.");
-                return;
+                return false;
             }
 
             scheduleOutputView.printDetailScheduleHeader();
@@ -68,9 +69,11 @@ public class MovieController {
                 int availableSeats = reservationService.getAvailableSeats(schedule).size();
                 scheduleOutputView.printScheduleWithSeats(schedule, availableSeats);
             }
+            return true;
         } catch (IllegalArgumentException e) {
             // 숫자가 아닌 입력, 없는 영화
             System.out.println(e.getMessage());
+            return false;
         }
     }
 

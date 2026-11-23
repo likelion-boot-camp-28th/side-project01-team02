@@ -11,6 +11,7 @@ import com.team02.cinema.member.repository.MemoryMemberRepository;
 import com.team02.cinema.member.service.MemberService;
 import com.team02.cinema.movie.controller.MovieController;
 import com.team02.cinema.movie.controller.ScheduleController;
+import com.team02.cinema.movie.domain.schedule.Schedule;
 import com.team02.cinema.movie.initial.MovieDataInitializer;
 import com.team02.cinema.movie.repository.MemoryMovieRepository;
 import com.team02.cinema.movie.repository.MemoryScheduleRepository;
@@ -30,6 +31,7 @@ import com.team02.cinema.payment.service.CouponService;
 import com.team02.cinema.payment.service.PaymentService;
 import com.team02.cinema.payment.service.PointService;
 import com.team02.cinema.reservation.controller.ReservationController;
+import com.team02.cinema.reservation.domain.Reservation;
 import com.team02.cinema.reservation.repository.MemoryReservationRepository;
 import com.team02.cinema.reservation.service.ReservationService;
 import com.team02.cinema.reservation.view.ReservationInputView;
@@ -149,6 +151,22 @@ public class Application {
                     Member member = findLoginMember(memberController, outputView);
                     if (member != null) {
                         paymentMenu.runMemberId(member, scanner, null);
+                    }
+                }
+                case "11" -> {
+                    Member member = findLoginMember(memberController, outputView);
+                    if (member != null){
+                        movieController.showMovieDetail();
+                        try {
+                            Long scheduleId = inputView.readScheduleId();
+                            Schedule schedule = scheduleService.findSchedule(scheduleId);
+                            Reservation reservation = reservationController.reserve(member, schedule);
+                            if (reservation != null) {
+                                paymentMenu.runMemberId(member, scanner, reservation);
+                            }
+                        }catch (IllegalArgumentException e){
+                            outputView.printError(e.getMessage());
+                        }
                     }
                 }
                 default -> outputView.printError(ErrorMessage.INVALID_MENU.getMessage());

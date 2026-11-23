@@ -42,7 +42,7 @@ public class Application {
         memberRepository.save(new Member("admin", "admin1234", "관리자", LocalDate.of(1990,1,1), Role.ADMIN));
         MemberService memberService = new MemberService(memberRepository);
         OutputView outputView = new OutputView();
-        MemberController memberController = new MemberController(memberService,outputView);
+            MemberController memberController = new MemberController(memberService,outputView);
         InputView inputView = new InputView(scanner);
 
         MovieRepository movieRepository = new MemoryMovieRepository();
@@ -104,10 +104,8 @@ public class Application {
                     }
                 }
                 case "4" -> {
-                    if (memberController.getLoginMember().isEmpty()) {
-                        outputView.printError(ErrorMessage.NOT_LOGGED_IN.getMessage());
-                    }else {
-                        Member member = memberController.getLoginMember().get();
+                    Member member = findLoginMember(memberController,outputView);
+                    if (member != null){
                         outputView.printMyInfo(member.getName(), member.getPoint());
                     }
                 }
@@ -122,18 +120,14 @@ public class Application {
                 case "6" -> movieController.showMovies();
                 case "7" -> movieController.showMovieDetail();
                 case "8" -> {
-                    if (memberController.getLoginMember().isEmpty()) {
-                        outputView.printError(ErrorMessage.NOT_LOGGED_IN.getMessage());
-                    } else {
-                        Member member = memberController.getLoginMember().get();
+                    Member member = findLoginMember(memberController,outputView);
+                    if (member != null){
                         reservationController.showMyReservations(member);
                     }
                 }
                 case "9" -> {
-                    if (memberController.getLoginMember().isEmpty()) {
-                        outputView.printError(ErrorMessage.NOT_LOGGED_IN.getMessage());
-                    } else {
-                        Member member = memberController.getLoginMember().get();
+                    Member member = findLoginMember(memberController,outputView);
+                    if (member != null){
                         reservationController.cancel(member);
                     }
                 }
@@ -159,5 +153,13 @@ public class Application {
                 default -> outputView.printError(ErrorMessage.INVALID_MENU.getMessage());
             }
         }
+    }
+
+    private static Member findLoginMember(MemberController memberController, OutputView outputView){
+        if (memberController.getLoginMember().isEmpty()){
+            outputView.printError(ErrorMessage.NOT_LOGGED_IN.getMessage());
+            return null;
+        }
+        return memberController.getLoginMember().get();
     }
 }

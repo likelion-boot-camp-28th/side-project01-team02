@@ -14,6 +14,7 @@ public class OutputView {
         System.out.println("7. 영화 상세");
         System.out.println("8. 예매 내역");
         System.out.println("9. 예매 취소");
+        System.out.println("10. 결제·쿠폰·포인트");
         System.out.println("0. 종료");
     }
 

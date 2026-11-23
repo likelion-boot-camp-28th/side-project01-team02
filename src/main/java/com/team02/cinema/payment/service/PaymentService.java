@@ -70,11 +70,11 @@ public class PaymentService {
 
         /// 포인트 사용
         if (usePoint > resultAmount) {
-            System.out.println("결제 금액 보다 많은 포인트를 사용할 수 업습니다.");
+            throw new IllegalArgumentException("결제 금액보다 많은 포인트를 사용할 수 없습니다.");
         }
 
         if (pointService.getBalance(memberId) < usePoint) {
-            System.out.println("보유 포인트가 부족합니다.");
+            throw new IllegalArgumentException("보유 포인트가 부족합니다.");
         }
 
         int finalAmount = resultAmount - usePoint;

@@ -116,7 +116,10 @@ public class PaymentController {
 
 
         int couponId = readUseCoupon(memberId);
-        int usePoint = readUsePoint(memberId);
+
+        // 쿠폰 할인 후 금액 (포인트는 이 금액까지만 사용할 수 있다)
+        int discountedAmount = originalAmount - couponController.calculateDiscount(memberId, couponId, originalAmount);
+        int usePoint = readUsePoint(memberId, discountedAmount);
 
 
         /// 결제 수단
@@ -206,9 +209,15 @@ public class PaymentController {
         }
     }
 
-    private int readUsePoint(long memberId) {
+    private int readUsePoint(long memberId, int discountedAmount) {
         while (true) {
             int points = readNonNegativeInt("포인트 입력 (미사용: 0): ");
+
+            // 결제 금액보다 많이 입력하면 다시 입력받는다. (예약은 그대로 유지)
+            if (points > discountedAmount) {
+                System.out.println("결제 금액(" + discountedAmount + "원)보다 많은 포인트를 사용할 수 없습니다.");
+                continue;
+            }
 
             try {
                 return pointController.usePoint(memberId, points);

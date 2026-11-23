@@ -102,6 +102,11 @@ public class CouponController {
         return couponId;
     }
 
+    /// 쿠폰 할인 금액 (쿠폰 미사용이면 0)
+    public int calculateDiscount(long memberId, int couponId, int ticketAmount) {
+        return couponService.calculateDiscount(memberId, couponId, ticketAmount);
+    }
+
     /// 쿠폰 보유 개수 출력
     public void showCounponCount(long memberId) {
 

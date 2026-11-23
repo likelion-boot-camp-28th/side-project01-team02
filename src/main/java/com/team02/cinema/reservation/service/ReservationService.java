@@ -3,6 +3,7 @@ package com.team02.cinema.reservation.service;
 import com.team02.cinema.member.domain.Member;
 import com.team02.cinema.movie.domain.schedule.Schedule;
 import com.team02.cinema.reservation.domain.Reservation;
+import com.team02.cinema.reservation.domain.ReservationStatus;
 import com.team02.cinema.reservation.repository.ReservationRepository;
 import com.team02.cinema.theater.domain.Seat;
 
@@ -64,6 +65,12 @@ public class ReservationService {
 
     public List<Reservation> getMemberReservations(Member member){
         return reservationRepository.findByMember(member);
+    }
+
+    public boolean hasUpcomingConfirmed(Member member){
+        return getMemberReservations(member).stream()
+                .anyMatch(reservation -> reservation.getStatus() == ReservationStatus.CONFIRMED
+                        && reservation.getSchedule().getStartTime().isAfter(LocalDateTime.now()));
     }
 
     public void confirm(Long id){

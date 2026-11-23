@@ -4,22 +4,6 @@ import com.team02.cinema.movie.controller.MovieController;
 import com.team02.cinema.movie.controller.ScheduleController;
 
 public class OutputView {
-    public void printMenu(){
-        System.out.println("1. 회원가입");
-        System.out.println("2. 로그인");
-        System.out.println("3. 로그아웃");
-        System.out.println("4. 내 정보 조회");
-        System.out.println("5. 관리자 메뉴");
-        System.out.println("6. 영화 목록");
-        System.out.println("7. 영화 상세");
-        System.out.println("8. 예매 내역");
-        System.out.println("9. 예매 취소");
-        System.out.println("10. 결제·쿠폰·포인트");
-        System.out.println("11. 예매하기");
-        System.out.println("12. 회원 탈퇴");
-        System.out.println("0. 종료");
-    }
-
     public void printExit(){
         System.out.println("시스템이 종료됩니다.");
     }
@@ -52,10 +36,32 @@ public class OutputView {
         System.out.println("4. 스케줄 목록");
         System.out.println("5. 스케줄 등록");
         System.out.println("6. 스케줄 삭제");
-        System.out.println("0. 이전 메뉴");
+        System.out.println("0. 로그아웃");
     }
 
     public void printWithdraw(){
         System.out.println("회원 탈퇴가 완료되었습니다.");
+    }
+
+    public void printMemberMenu(){
+        System.out.println("===== 회원 메뉴 =====");
+        System.out.println("1. 영화 목록");
+        System.out.println("2. 영화 상세");
+        System.out.println("3. 예매하기");
+        System.out.println("4. 예매 내역");
+        System.out.println("5. 예매 취소");
+        System.out.println("6. 결제·쿠폰·포인트");
+        System.out.println("7. 내 정보 조회");
+        System.out.println("8. 회원 탈퇴");
+        System.out.println("0. 로그아웃");
+    }
+
+    public void printGuestMenu(){
+        System.out.println("===== 비회원 메뉴 =====");
+        System.out.println("1. 회원가입");
+        System.out.println("2. 로그인");
+        System.out.println("3. 영화 목록");
+        System.out.println("4. 영화 상세");
+        System.out.println("0. 종료");
     }
 }

@@ -50,11 +50,11 @@ public class Application {
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
         MemberRepository memberRepository = new MemoryMemberRepository();
-        memberRepository.save(new Member("admin", "admin1234", "관리자", LocalDate.of(1990,1,1), Role.ADMIN));
+        memberRepository.save(new Member("admin", "admin1234", "관리자", LocalDate.of(1990, 1, 1), Role.ADMIN));
         ReservationService reservationService = new ReservationService(new MemoryReservationRepository());
         MemberService memberService = new MemberService(memberRepository, reservationService::hasUpcomingConfirmed);
         OutputView outputView = new OutputView();
-            MemberController memberController = new MemberController(memberService,outputView);
+        MemberController memberController = new MemberController(memberService, outputView);
         InputView inputView = new InputView(scanner);
 
         MovieRepository movieRepository = new MemoryMovieRepository();
@@ -86,110 +86,20 @@ public class Application {
         new MovieDataInitializer(movieService, scheduleService, theaterService).init();
 
 
-
         boolean running = true;
-        while(running){
-            outputView.printMenu();
-            String choice = inputView.readMenu();
-
-            switch (choice){
-                case "0" -> {
-                    outputView.printExit();
-                    running = false;
-                }
-                case "1" -> {
-                    String id = inputView.readLoginId();
-                    String password = inputView.readPassword();
-                    String name = inputView.readName();
-                    try {
-                        LocalDate birth = inputView.readBirthDate();
-                        memberController.signUp(id,password,name,birth);
-                    } catch (DateTimeParseException e) {
-                        outputView.printError(ErrorMessage.INVALID_BIRTH_DATE.getMessage());
-                    }
-                }
-                case "2" -> {
-                    String id = inputView.readLoginId();
-                    String password = inputView.readPassword();
-                    memberController.login(id,password);
-                }
-                case "3" -> {
-                    if (memberController.getLoginMember().isEmpty()){
-                        outputView.printError(ErrorMessage.NOT_LOGGED_IN.getMessage());
-                    }else{
-                        memberController.logout();
-                        outputView.printLogout();
-                    }
-                }
-                case "4" -> {
-                    Member member = findLoginMember(memberController,outputView);
-                    if (member != null){
-                        outputView.printMyInfo(member.getName(), member.getPoint());
-                    }
-                }
-                case "5" -> {
-                    if (memberController.getLoginMember().isEmpty()) {
-                        outputView.printError(ErrorMessage.NOT_LOGGED_IN.getMessage());
-                    }else if(!memberController.canEnterAdminMenu()) {
-                        outputView.printError(ErrorMessage.NO_ADMIN_PERMISSION.getMessage());
-                    }else {
-                        runAdminMenu(inputView, outputView, movieController, scheduleController);                    }
-                }
-                case "6" -> movieController.showMovies();
-                case "7" -> movieController.showMovieDetail();
-                case "8" -> {
-                    Member member = findLoginMember(memberController,outputView);
-                    if (member != null){
-                        reservationController.showMyReservations(member);
-                    }
-                }
-                case "9" -> {
-                    Member member = findLoginMember(memberController,outputView);
-                    if (member != null){
-                        reservationController.cancel(member);
-                    }
-                }
-                case "10" -> {
-                    Member member = findLoginMember(memberController, outputView);
-                    if (member != null) {
-                        paymentMenu.runMemberId(member, scanner, null);
-                    }
-                }
-                case "11" -> {
-                    Member member = findLoginMember(memberController, outputView);
-                    if (member != null) {
-                        Optional<Long> movieId = movieController.showMovieDetail();
-                        if (movieId.isPresent()) {
-                            try {
-                                Long scheduleId = inputView.readScheduleId();
-                                // 고른 영화의 상영인지 확인 (다른 영화의 상영 번호는 예매되지 않도록)
-                                Schedule schedule = scheduleService.findScheduleOfMovie(movieId.get(), scheduleId);
-                                Reservation reservation = reservationController.reserve(member, schedule);
-                                if (reservation != null) {
-                                    paymentMenu.runMemberId(member, scanner, reservation);
-                                    if (reservation.getStatus() == ReservationStatus.PENDING) {
-                                        reservationService.cancelBySystem(reservation.getId());
-                                    }
-                                }
-                            } catch (IllegalArgumentException e) {
-                                outputView.printError(e.getMessage());
-                            }
-                        }
-                    }
-                }
-                case "12" -> {
-                    Member member = findLoginMember(memberController, outputView);
-                    if (member != null){
-                        memberController.withdraw();
-                    }
-                }
-                default -> outputView.printError(ErrorMessage.INVALID_MENU.getMessage());
+        while (running) {
+            if (memberController.getLoginMember().isEmpty()) {
+                running = runGuestMenu(inputView, outputView, memberController, movieController);
+            } else if (memberController.canEnterAdminMenu()) {
+                runAdminMenu(inputView, outputView, movieController, scheduleController, memberController);
+            } else {
+                runMemberMenu(inputView, outputView, scanner, memberController, movieController, scheduleService, reservationService, reservationController, paymentMenu);
             }
-
         }
     }
+
     private static void runAdminMenu(InputView inputView, OutputView outputView,
-                                     MovieController movieController, ScheduleController scheduleController) {
+                                     MovieController movieController, ScheduleController scheduleController, MemberController memberController) {
         boolean inAdmin = true;
         while (inAdmin) {
             outputView.printAdminMenu();
@@ -201,17 +111,98 @@ public class Application {
                 case "4" -> scheduleController.showSchedules();
                 case "5" -> scheduleController.registerSchedule();
                 case "6" -> scheduleController.deleteSchedule();
-                case "0" -> inAdmin = false;
+                case "0" -> {
+                    inAdmin = false;
+                    memberController.logout();
+                    outputView.printLogout();
+                }
                 default -> outputView.printError(ErrorMessage.INVALID_MENU.getMessage());
             }
         }
     }
 
-    private static Member findLoginMember(MemberController memberController, OutputView outputView){
-        if (memberController.getLoginMember().isEmpty()){
-            outputView.printError(ErrorMessage.NOT_LOGGED_IN.getMessage());
-            return null;
+    private static boolean runGuestMenu(InputView inputView, OutputView outputView, MemberController memberController, MovieController movieController) {
+        outputView.printGuestMenu();
+        String choice = inputView.readMenu();
+        switch (choice) {
+            case "1" -> {
+                String id = inputView.readLoginId();
+                String password = inputView.readPassword();
+                String name = inputView.readName();
+                try {
+                    LocalDate birth = inputView.readBirthDate();
+                    memberController.signUp(id, password, name, birth);
+                } catch (DateTimeParseException e) {
+                    outputView.printError(ErrorMessage.INVALID_BIRTH_DATE.getMessage());
+                }
+            }
+            case "2" -> {
+                String id = inputView.readLoginId();
+                String password = inputView.readPassword();
+                memberController.login(id, password);
+            }
+            case "3" -> {
+                movieController.showMovies();
+            }
+            case "4" -> {
+                movieController.showMovieDetail();
+            }
+            case "0" -> {
+                outputView.printExit();
+                return false;
+            }
+            default -> outputView.printError(ErrorMessage.INVALID_MENU.getMessage());
         }
-        return memberController.getLoginMember().get();
+        return true;
+    }
+
+    private static void runMemberMenu(InputView inputView, OutputView outputView, Scanner scanner,
+                                      MemberController memberController, MovieController movieController,
+                                      ScheduleService scheduleService, ReservationService reservationService,
+                                      ReservationController reservationController, PaymentMenu paymentMenu) {
+        Member member = memberController.getLoginMember().get();
+        outputView.printMemberMenu();
+        String choice = inputView.readMenu();
+        switch (choice) {
+            case "1" -> movieController.showMovies();
+            case "2" -> movieController.showMovieDetail();
+            case "3" -> {
+                Optional<Long> movieId = movieController.showMovieDetail();
+                if (movieId.isPresent()) {
+                    try {
+                        Long scheduleId = inputView.readScheduleId();
+                        // 고른 영화의 상영인지 확인 (다른 영화의 상영 번호는 예매되지 않도록)
+                        Schedule schedule = scheduleService.findScheduleOfMovie(movieId.get(), scheduleId);
+                        Reservation reservation = reservationController.reserve(member, schedule);
+                        if (reservation != null) {
+                            paymentMenu.runMemberId(member, scanner, reservation);
+                            if (reservation.getStatus() == ReservationStatus.PENDING) {
+                                reservationService.cancelBySystem(reservation.getId());
+                            }
+                        }
+                    } catch (IllegalArgumentException e) {
+                        outputView.printError(e.getMessage());
+                    }
+                }
+            }
+            case "4" -> reservationController.showMyReservations(member);
+            case "5" -> {
+                reservationController.cancel(member);
+            }
+            case "6" -> {
+                paymentMenu.runMemberId(member, scanner, null);
+            }
+            case "7" -> {
+                outputView.printMyInfo(member.getName(), member.getPoint());
+            }
+            case "8" -> {
+                memberController.withdraw();
+            }
+            case "0" -> {
+                memberController.logout();
+                outputView.printLogout();
+            }
+            default -> outputView.printError(ErrorMessage.INVALID_MENU.getMessage());
+        }
     }
 }

@@ -48,10 +48,9 @@ public class Application {
         MovieRepository movieRepository = new MemoryMovieRepository();
         ScheduleRepository scheduleRepository = new MemoryScheduleRepository();
         MovieService movieService = new MovieService(movieRepository, scheduleRepository);
-        // 예매 쪽 ReservationChecker 구현 전이라 "예매 없음"으로 고정
-        ScheduleService scheduleService = new ScheduleService(scheduleRepository, movieRepository,
-                scheduleId -> false);
         ReservationService reservationService = new ReservationService(new MemoryReservationRepository());
+        ScheduleService scheduleService = new ScheduleService(scheduleRepository, movieRepository,
+                reservationService::hasReservation);
 
         TheaterService theaterService = new TheaterService();
         theaterService.addScreen(1, 5, 5); // 1관: 5행 x 5열

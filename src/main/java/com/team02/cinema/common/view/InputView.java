@@ -34,4 +34,9 @@ public class InputView {
         System.out.print("번호를 입력하세요 : ");
         return sc.nextLine();
     }
+
+    public Long readScheduleId(){
+        System.out.print("상영 번호를 입력하세요 : ");
+        return Long.parseLong(sc.nextLine());
+    }
 }

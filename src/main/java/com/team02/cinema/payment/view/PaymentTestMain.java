@@ -47,8 +47,11 @@ public class PaymentTestMain {
 
         // 좌석 인덱스는 0부터 시작하므로 (2, 4)는 C5, (2, 5)는 C6이다.
         Reservation reservation = reservationService.reserve(member, schedule, List.of(screen.getSeat(2, 4), screen.getSeat(2, 5)));
+        System.out.println(reservationService.getReservation(1L));
         couponController.issueWelcome3000Coupon(member.getId());
         paymentMenu.run(member.getId(), sc, reservation);
+
+
 
     }
 }

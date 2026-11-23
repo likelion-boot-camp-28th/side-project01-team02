@@ -46,25 +46,27 @@ public class PaymentService {
     public Payment pay(long memberId, int originalAmount, Integer couponId, int usePoint, PaymentType.BankType paymentType, Reservation reservation) {
 
 
-        /// 결제 금액 검증
+        if (reservation == null) {
+            throw new IllegalArgumentException("결제할 예매 정보가 필요합니다.");
+        }
         if (originalAmount <= 0) {
-            System.out.println("결제 금액은 0원 보다 커야 됩니다. (음수가 될 수없습니다)");
+            throw new IllegalArgumentException("결제 금액은 0원보다 커야 합니다.");
         }
-
         if (usePoint < 0) {
-            System.out.println("사용 포인트는 음수 일 수 없습니다.");
+            throw new IllegalArgumentException("사용 포인트는 음수일 수 없습니다.");
+        }
+        if (paymentType == null || paymentType.getPaymentType() == null) {
+            throw new IllegalArgumentException("결제 수단을 선택해 주세요.");
         }
 
-        if (paymentType.getPaymentType() == null) {
-            System.out.println("결제 수단을 선택 해주세요. ");
-        }
+
         /// 쿠폰 미사용 null,
-        int selectCouponId = (couponId == null) ? 0 : couponId;
+        int selectedCouponId = (couponId == null) ? 0 : couponId;
 
         /// 쿠폰 할인 금액 측정
         int couponDiscount = couponService.calculateDiscount(memberId, couponId, originalAmount);
-
         int resultAmount = originalAmount - couponDiscount;
+        int balanceBeforePayment = pointService.getBalance(memberId);
 
         /// 포인트 사용
         if (usePoint > resultAmount) {
@@ -74,46 +76,58 @@ public class PaymentService {
         if (pointService.getBalance(memberId) < usePoint) {
             System.out.println("보유 포인트가 부족합니다.");
         }
-        int finalAmount = resultAmount - usePoint;
 
+        int finalAmount = resultAmount - usePoint;
         int earnedPoints = finalAmount * 5 / 100;     /// 적립 포인트 게산 (%5)
 
+
+        boolean couponUsed = false;
+        boolean pointProcessingStarted = false;
 
         /// 결제 번호 생성
         String paymentId = String.format("P%s%03d", LocalDate.now()
                 .format(DateTimeFormatter.BASIC_ISO_DATE), nextPaymentNumber);
 
+        try {
+            if (selectedCouponId != 0) {
+                couponService.useCoupon(memberId, selectedCouponId); /// 쿠폰 사용
+                couponUsed = true;
+            }
 
-        /// 쿠폰 사용
-        couponService.useCoupon(memberId, selectCouponId);
-
-        /// 포인트 사용
-        pointService.usePoint(memberId, usePoint, paymentId);
-
-        /// 포인트 적립
-        pointService.earnPoint(memberId, earnedPoints, paymentId);
-
-        /// 포인트 잔액
-        int remainingPoint = pointService.getBalance(memberId);
+            pointProcessingStarted = true;
+            pointService.usePoint(memberId, usePoint, paymentId); /// 포인트 사용
+            pointService.earnPoint(memberId, earnedPoints, paymentId); /// 포인트 적립
 
 
-        Payment payment = new Payment(paymentId, selectCouponId, originalAmount,
-                couponDiscount, usePoint, finalAmount, earnedPoints, remainingPoint, paymentType, reservation);
+            Payment payment = new Payment(paymentId, selectedCouponId, originalAmount,
+                    couponDiscount, usePoint, finalAmount, earnedPoints, pointService.getBalance(memberId),
+                    paymentType, reservation);
 
 
-        payments.put(paymentId, payment);
-        paymentOwners.put(paymentId, memberId);
+            payments.put(paymentId, payment);
+            paymentOwners.put(paymentId, memberId);
+            nextPaymentNumber++;
 
-        nextPaymentNumber++;
+            return payment;
 
-        return payment;
+
+        } catch (RuntimeException failure) { /// 오류 발생 삭제
+            payments.remove(paymentId);
+            paymentOwners.remove(paymentId);
+
+            if (pointProcessingStarted) {
+                pointService.rollbackPaymentPoints(memberId, paymentId, balanceBeforePayment);
+            }
+            if (couponUsed) {
+                try {
+                    couponService.restoreCoupon(memberId, selectedCouponId);
+                } catch (RuntimeException rollbackFailure) {
+                    failure.addSuppressed(rollbackFailure);
+                }
+            }
+            throw failure;
+        }
     }
-
-    public Payment pay(long memberId, int originalAmount, int usePoint, PaymentType.BankType paymentType, Reservation reservation) {
-        return pay(memberId, originalAmount, null, usePoint, paymentType, reservation);
-
-    }
-
 
     /// 결제번호로 조회
     public Payment findPayment(long memberId, String paymentId) {
@@ -154,7 +168,6 @@ public class PaymentService {
 
         return getCompletedPayment(memberId).stream()
                 .mapToInt(payment -> payment.getFinalAmount()).sum();
-
 
     }
 
@@ -201,6 +214,7 @@ public class PaymentService {
 
         return payment;
     }
+
 
     /// 예약 취소
     public void cancelReservation(Member member, Long reservationId) {

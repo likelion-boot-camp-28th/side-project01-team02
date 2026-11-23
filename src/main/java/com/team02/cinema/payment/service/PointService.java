@@ -133,6 +133,12 @@ public class PointService {
         return revokeAmount;
     }
 
+    public void rollbackPaymentPoints(long memberId, String paymentId, int balanceBeforePayment) {
+
+        resultBalances.put(memberId, balanceBeforePayment);
+        pointHistories.removeIf(point -> point.getMemberId() == memberId && paymentId.equals(point.getPaymentId()));
+    }
+
 
     /// 회원별 포인트 내역 조회
     public List<Point> getPointHistories(long memberId) {

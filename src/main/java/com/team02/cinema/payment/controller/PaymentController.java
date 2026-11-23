@@ -130,6 +130,9 @@ public class PaymentController {
 
         } catch (IllegalArgumentException | IllegalStateException e) {
             System.out.println("결제 실패: " + e.getMessage());
+            // 결제에 실패하면 예약을 취소해서 잡아둔 좌석을 다시 예매할 수 있게 한다.
+            reservation.cancel();
+            System.out.println("예약이 취소되어 좌석이 반환되었습니다. 다시 예매해 주세요.");
         }
     }
 

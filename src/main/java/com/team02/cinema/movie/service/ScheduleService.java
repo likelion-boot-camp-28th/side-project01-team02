@@ -29,7 +29,7 @@ public class ScheduleService {
     // 스케줄 등록: 상영관(Screen)은 호출하는 쪽에서 TheaterService로 찾아서 넘겨주도록 함
     public Schedule registerSchedule(Long movieId, Screen screen, LocalDateTime startTime, int basePrice) {
         Movie movie = movieRepository.findById(movieId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 영화입니다. id=" + movieId));
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 영화입니다."));
 
         // overlaps()에 넘기기 위한 객체
         Schedule newSchedule = new Schedule(null, movie, screen, startTime, basePrice);
@@ -58,10 +58,10 @@ public class ScheduleService {
     // 스케줄 삭제
     public void deleteSchedule(Long id) {
         if (scheduleRepository.findById(id).isEmpty()) {
-            throw new IllegalArgumentException("존재하지 않는 스케줄입니다. id=" + id);
+            throw new IllegalArgumentException("존재하지 않는 스케줄입니다.");
         }
         if (reservationChecker.hasReservation(id)) {
-            throw new IllegalStateException("예매가 있는 스케줄은 삭제할 수 없습니다. id=" + id);
+            throw new IllegalStateException("예매가 있는 스케줄은 삭제할 수 없습니다.");
         }
         scheduleRepository.deleteById(id);
     }
@@ -69,7 +69,7 @@ public class ScheduleService {
     // 스케줄 단건 조회: 예매하기에서 상영 번호로 스케줄을 찾을 때 사용
     public Schedule findSchedule(Long id) {
         return scheduleRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("[ERROR] 존재하지 않는 스케줄입니다. id=" + id));
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 스케줄입니다."));
     }
 
     // 고른 영화의 스케줄인지 확인하면서 조회: 예매하기에서 다른 영화의 상영 번호를 넣는 것을 막기 위해 사용
@@ -78,7 +78,7 @@ public class ScheduleService {
 
         // Long은 객체라서 == 대신 equals로 값을 비교한다
         if (!schedule.getMovie().getId().equals(movieId)) {
-            throw new IllegalArgumentException("[ERROR] 선택한 영화의 상영 스케줄이 아닙니다. id=" + scheduleId);
+            throw new IllegalArgumentException("선택한 영화의 상영 스케줄이 아닙니다.");
         }
         return schedule;
     }

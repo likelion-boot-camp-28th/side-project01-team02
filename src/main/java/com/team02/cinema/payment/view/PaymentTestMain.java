@@ -30,7 +30,8 @@ public class PaymentTestMain {
         Scanner sc = new Scanner(System.in);
         CouponService couponService = new CouponService();
         PointService pointService = new PointService();
-        PaymentService paymentService = new PaymentService(couponService, pointService);
+        ReservationService reservationService = new ReservationService(new MemoryReservationRepository());
+        PaymentService paymentService = new PaymentService(couponService, pointService, reservationService);
 
         CouponController couponController = new CouponController(couponService);
         PointController pointController = new PointController(pointService);
@@ -43,7 +44,6 @@ public class PaymentTestMain {
         Movie movie = new Movie(1L, "테스트 영화", Genre.ACTION, 120, AgeRating.ALL, LocalDate.now());
         Schedule schedule = new Schedule(1L, movie, screen, LocalDateTime.now().plusHours(1), 30_000);
 
-        ReservationService reservationService = new ReservationService(new MemoryReservationRepository());
 
         // 좌석 인덱스는 0부터 시작하므로 (2, 4)는 C5, (2, 5)는 C6이다.
         Reservation reservation = reservationService.reserve(member, schedule, List.of(screen.getSeat(2, 4), screen.getSeat(2, 5)));

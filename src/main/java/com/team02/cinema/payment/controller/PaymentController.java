@@ -5,6 +5,7 @@ import com.team02.cinema.payment.repository.Payment;
 import com.team02.cinema.payment.repository.PaymentType;
 import com.team02.cinema.payment.service.PaymentService;
 import com.team02.cinema.reservation.domain.Reservation;
+import com.team02.cinema.reservation.domain.ReservationStatus;
 import com.team02.cinema.theater.domain.Seat;
 
 import java.time.format.DateTimeFormatter;
@@ -98,6 +99,12 @@ public class PaymentController {
 
     public void paymentMenu(long memberId, int originalAmount, Reservation reservation) {
 
+        // 결제 대기(PENDING) 상태의 예약만 결제할 수 있다. (이미 결제했거나 취소된 예약은 다시 결제하지 않도록)
+        if (reservation.getStatus() != ReservationStatus.PENDING) {
+            System.out.println("결제 대기 상태의 예약만 결제할 수 있습니다.");
+            return;
+        }
+
         System.out.println("\n===== 영화 결제 =====");
         printReservationDetails(reservation);
         System.out.println();
@@ -117,6 +124,8 @@ public class PaymentController {
 
         try {
             Payment payment = paymentService.pay(memberId, originalAmount, couponId, usePoint, bankType, reservation);
+            // 결제가 성공하면 예약을 확정(CONFIRMED)한다.
+            reservation.confirm();
             printReceipt(payment);
 
         } catch (IllegalArgumentException | IllegalStateException e) {

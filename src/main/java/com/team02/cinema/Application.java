@@ -22,6 +22,13 @@ import com.team02.cinema.movie.view.MovieInputView;
 import com.team02.cinema.movie.view.MovieOutputView;
 import com.team02.cinema.movie.view.ScheduleInputView;
 import com.team02.cinema.movie.view.ScheduleOutputView;
+import com.team02.cinema.payment.controller.CouponController;
+import com.team02.cinema.payment.controller.PaymentController;
+import com.team02.cinema.payment.controller.PointController;
+import com.team02.cinema.payment.domain.PaymentMenu;
+import com.team02.cinema.payment.service.CouponService;
+import com.team02.cinema.payment.service.PaymentService;
+import com.team02.cinema.payment.service.PointService;
 import com.team02.cinema.reservation.controller.ReservationController;
 import com.team02.cinema.reservation.repository.MemoryReservationRepository;
 import com.team02.cinema.reservation.service.ReservationService;
@@ -63,6 +70,13 @@ public class Application {
                 new ScheduleInputView(scanner), scheduleOutputView, movieOutputView);
         ReservationController reservationController = new ReservationController(reservationService,new TheaterView() ,
                 new ReservationInputView(scanner), new ReservationOutputView());
+        CouponService couponService = new CouponService();
+        PointService pointService = new PointService();
+        PaymentService paymentService = new PaymentService(couponService, pointService);
+        CouponController couponController = new CouponController(couponService);
+        PointController pointController = new PointController(pointService);
+        PaymentController paymentController = new PaymentController(paymentService, couponController, pointController);
+        PaymentMenu paymentMenu = new PaymentMenu(paymentController, couponController, pointController);
 
         // ===== 초기 데이터 =====
         new MovieDataInitializer(movieService, scheduleService, theaterService).init();
@@ -129,6 +143,12 @@ public class Application {
                     Member member = findLoginMember(memberController,outputView);
                     if (member != null){
                         reservationController.cancel(member);
+                    }
+                }
+                case "10" -> {
+                    Member member = findLoginMember(memberController, outputView);
+                    if (member != null) {
+                        paymentMenu.runMemberId(member, scanner, null);
                     }
                 }
                 default -> outputView.printError(ErrorMessage.INVALID_MENU.getMessage());

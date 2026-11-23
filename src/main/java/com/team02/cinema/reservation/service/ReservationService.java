@@ -79,11 +79,16 @@ public class ReservationService {
         if (!reservation.getMember().getLoginId().equals(member.getLoginId())) {
             throw new IllegalArgumentException("본인의 예매만 취소할 수 있습니다.");
         }
+        checkCancelTime(reservation);
+        reservation.cancel();
+    }
+
+    // 상영 시작 20분 전이 지났으면 취소(환불)할 수 없다. (예매 취소와 환불에서 같이 사용)
+    public void checkCancelTime(Reservation reservation){
         LocalDateTime limit = reservation.getSchedule().getStartTime().minusMinutes(CANCEL_LIMIT_MINUTES);
         if (reservation.isActive() && LocalDateTime.now().isAfter(limit)) {
             throw new IllegalStateException("상영 시작 " + CANCEL_LIMIT_MINUTES + "분 전까지만 취소할 수 있습니다.");
         }
-        reservation.cancel();
     }
 
     public boolean hasReservation(Long scheduleId){

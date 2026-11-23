@@ -173,6 +173,9 @@ public class PaymentService {
             throw new IllegalArgumentException("본인의 예매에 연결된 결제만 환불할 수 있습니다.");
         }
 
+        /// 상영 시작 20분 전까지만 환불 가능 (포인트, 쿠폰을 복구하기 전에 먼저 확인)
+        reservationService.checkCancelTime(reservation);
+
         int currentBalance = pointService.getBalance(memberId);
         int expectedBalance = currentBalance + payment.getUsedPoints();
         int earnedPoints = payment.getEarnedPoints();

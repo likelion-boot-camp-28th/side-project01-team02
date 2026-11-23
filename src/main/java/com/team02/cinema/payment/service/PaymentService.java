@@ -64,7 +64,7 @@ public class PaymentService {
         int selectedCouponId = (couponId == null) ? 0 : couponId;
 
         /// 쿠폰 할인 금액 측정
-        int couponDiscount = couponService.calculateDiscount(memberId, couponId, originalAmount);
+        int couponDiscount = couponService.calculateDiscount(memberId, selectedCouponId, originalAmount);
         int resultAmount = originalAmount - couponDiscount;
         int balanceBeforePayment = pointService.getBalance(memberId);
 

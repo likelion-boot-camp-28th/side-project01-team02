@@ -16,6 +16,7 @@ public class OutputView {
         System.out.println("9. 예매 취소");
         System.out.println("10. 결제·쿠폰·포인트");
         System.out.println("11. 예매하기");
+        System.out.println("12. 회원 탈퇴");
         System.out.println("0. 종료");
     }
 
@@ -52,5 +53,9 @@ public class OutputView {
         System.out.println("5. 스케줄 등록");
         System.out.println("6. 스케줄 삭제");
         System.out.println("0. 이전 메뉴");
+    }
+
+    public void printWithdraw(){
+        System.out.println("회원 탈퇴가 완료되었습니다.");
     }
 }

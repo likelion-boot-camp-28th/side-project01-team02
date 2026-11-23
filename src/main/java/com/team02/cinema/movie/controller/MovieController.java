@@ -13,6 +13,7 @@ import com.team02.cinema.reservation.service.ReservationService;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 // 영화 메뉴 기능을 담당 (입력 -> 서비스 호출 -> 결과 출력)
 // 예외는 여기서 잡아 메시지만 출력하고, 프로그램은 계속 실행되도록 함
@@ -46,8 +47,10 @@ public class MovieController {
     }
 
     // 영화 상세 조회: 영화 정보 + 그 영화의 상영 스케줄 목록(잔여 좌석 수 포함)
-    // 예매 가능한 상영을 보여줬으면 true, 아니면(잘못된 입력, 없는 영화, 상영 없음) false
-    public boolean showMovieDetail() {
+    // 예매 가능한 상영을 보여줬으면 고른 영화 id를 담아서 돌려주고,
+    // 아니면(잘못된 입력, 없는 영화, 상영 없음) 빈 Optional을 돌려준다
+    // 예매하기에서 고른 영화의 상영만 예매되도록 이 id를 사용한다
+    public Optional<Long> showMovieDetail() {
         // 번호를 고르기 쉽게 목록을 먼저 보여줌
         showMovies();
 
@@ -60,7 +63,7 @@ public class MovieController {
             List<Schedule> schedules = scheduleService.findUpcomingSchedulesByMovie(id);
             if (schedules.isEmpty()) {
                 System.out.println("예매 가능한 상영 스케줄이 없습니다.");
-                return false;
+                return Optional.empty();
             }
 
             scheduleOutputView.printDetailScheduleHeader();
@@ -69,11 +72,11 @@ public class MovieController {
                 int availableSeats = reservationService.getAvailableSeats(schedule).size();
                 scheduleOutputView.printScheduleWithSeats(schedule, availableSeats);
             }
-            return true;
+            return Optional.of(id);
         } catch (IllegalArgumentException e) {
             // 숫자가 아닌 입력, 없는 영화
             System.out.println(e.getMessage());
-            return false;
+            return Optional.empty();
         }
     }
 

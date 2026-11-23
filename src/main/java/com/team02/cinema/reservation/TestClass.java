@@ -5,6 +5,9 @@ import com.team02.cinema.movie.domain.Movie.AgeRating;
 import com.team02.cinema.movie.domain.Movie.Genre;
 import com.team02.cinema.movie.domain.Movie.Movie;
 import com.team02.cinema.movie.domain.schedule.Schedule;
+import com.team02.cinema.payment.service.CouponService;
+import com.team02.cinema.payment.service.PaymentService;
+import com.team02.cinema.payment.service.PointService;
 import com.team02.cinema.reservation.controller.ReservationController;
 import com.team02.cinema.reservation.domain.Reservation;
 import com.team02.cinema.reservation.repository.MemoryReservationRepository;
@@ -97,7 +100,8 @@ public class TestClass {
         title("8. 컨트롤러 흐름 (입력 시뮬레이션)");
         Scanner input = new Scanner("a1,a2\nx9\nB1\n1\nabc\n");
         ReservationController controller = new ReservationController(
-                service, view, new ReservationInputView(input), outputView);
+                service, new PaymentService(new CouponService(), new PointService(), service), view,
+                new ReservationInputView(input), outputView);
         controller.reserve(member, evening);
         System.out.println();
         controller.reserve(member, evening);

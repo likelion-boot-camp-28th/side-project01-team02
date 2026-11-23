@@ -230,11 +230,15 @@ public class PaymentService {
             throw new IllegalStateException("이 예매에 결제가 여러 건 연결되어 있습니다.");
         }
 
+        // 결제한 예약이면 환불한다. (refund 안에서 예약 취소까지 같이 처리된다)
         if (!linkedPayments.isEmpty()) {
             Payment payment = linkedPayments.get(0);
             refund(member.getId(), payment.getPaymentId());
+            return;
         }
-        reservation.cancel();
+
+        // 결제하지 않은 예약이면 예약만 취소한다. (본인 확인, 상영 20분 전 제한 포함)
+        reservationService.cancel(member, reservation.getId());
     }
 
 }

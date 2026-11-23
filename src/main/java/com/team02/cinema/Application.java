@@ -72,11 +72,11 @@ public class Application {
                 new MovieInputView(scanner), movieOutputView, scheduleOutputView);
         ScheduleController scheduleController = new ScheduleController(scheduleService, movieService, theaterService,
                 new ScheduleInputView(scanner), scheduleOutputView, movieOutputView);
-        ReservationController reservationController = new ReservationController(reservationService,new TheaterView() ,
-                new ReservationInputView(scanner), new ReservationOutputView());
         CouponService couponService = new CouponService();
         PointService pointService = new PointService();
         PaymentService paymentService = new PaymentService(couponService, pointService, reservationService);
+        ReservationController reservationController = new ReservationController(reservationService, paymentService,
+                new TheaterView(), new ReservationInputView(scanner), new ReservationOutputView());
         CouponController couponController = new CouponController(couponService);
         PointController pointController = new PointController(pointService);
         PaymentController paymentController = new PaymentController(paymentService, couponController, pointController);

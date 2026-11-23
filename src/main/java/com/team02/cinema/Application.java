@@ -155,17 +155,18 @@ public class Application {
                 }
                 case "11" -> {
                     Member member = findLoginMember(memberController, outputView);
-                    if (member != null){
-                        movieController.showMovieDetail();
-                        try {
-                            Long scheduleId = inputView.readScheduleId();
-                            Schedule schedule = scheduleService.findSchedule(scheduleId);
-                            Reservation reservation = reservationController.reserve(member, schedule);
-                            if (reservation != null) {
-                                paymentMenu.runMemberId(member, scanner, reservation);
+                    if (member != null) {
+                        if (movieController.showMovieDetail()) {
+                            try {
+                                Long scheduleId = inputView.readScheduleId();
+                                Schedule schedule = scheduleService.findSchedule(scheduleId);
+                                Reservation reservation = reservationController.reserve(member, schedule);
+                                if (reservation != null) {
+                                    paymentMenu.runMemberId(member, scanner, reservation);
+                                }
+                            } catch (IllegalArgumentException e) {
+                                outputView.printError(e.getMessage());
                             }
-                        }catch (IllegalArgumentException e){
-                            outputView.printError(e.getMessage());
                         }
                     }
                 }

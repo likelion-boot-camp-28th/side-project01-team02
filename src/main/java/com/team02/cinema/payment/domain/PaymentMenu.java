@@ -55,7 +55,7 @@ public class PaymentMenu {
                       [0] 이전 메뉴
                     ========================================
                     """);
-            System.out.print("메뉴 선택 > ");
+            System.out.print("메뉴 선택: ");
             /// 입력이 끝났을 때 nextLine()의 NoSuchElementException을 방지한다.
             if (!sc.hasNextLine()) {
                 System.out.println("\n입력이 종료되어 결제 메뉴를 닫습니다.");
@@ -66,8 +66,16 @@ public class PaymentMenu {
             switch (choice) {
                 case "1" -> {
                     try {
+                        if (reservation == null) {
+                            System.out.println("결제할 예매를 먼저 선택해 주세요.");
+                            break;
+                        }
+                        int pricePerSeat = reservation.getSchedule().getBasePrice();
+                        int seatCount = reservation.getSeats().size();
+                        int originalAmount = pricePerSeat * seatCount;
 
-                        paymentController.paymentMenu(memberId, DEMO_TICKET_AMOUNT, reservation);
+
+                        paymentController.paymentMenu(memberId, originalAmount, reservation);
 
                     } catch (IllegalArgumentException | IllegalStateException e) {
                         System.out.println("결제 실패: " + e.getMessage());
@@ -94,8 +102,39 @@ public class PaymentMenu {
                 }
                 case "4" -> {
                     try {
-
-                        couponController.showMyCoupons(memberId);
+                        select:
+                        while (true) {
+                            System.out.println("""
+                                    ========================================
+                                               CINEMA PAYMENT
+                                    ========================================
+                                      [1] 쿠폰 보유 개수
+                                      [2] 사용 가능한 쿠폰 개수
+                                      [3] 내 쿠폰 전체 조회
+                                      [0] 이전 메뉴
+                                    ========================================
+                                    """);
+                            System.out.print("메뉴 입력: ");
+                            String input = sc.nextLine().strip();
+                            if (input.isEmpty()) {
+                                System.out.println("다시 입력해주세요. ");
+                                continue;
+                            }
+                            try {
+                                int value = Integer.parseInt(input);
+                                if (value >= 0) {
+                                    switch (value) {
+                                        case 1 -> couponController.showCounponCount(memberId);
+                                        case 2 -> couponController.showAvailableCoupon(memberId);
+                                        case 3 -> couponController.showMyCoupons(memberId);
+                                        case 0 -> {break select;}
+                                        default -> System.out.println("1,2,3,0 정수를 입력해 주세요.");
+                                    }
+                                }
+                            } catch (NumberFormatException e) {
+                                System.out.println("1,2,3,0 정수를 입력해 주세요.");
+                            }
+                        }
 
                     } catch (IllegalArgumentException | IllegalStateException e) {
                         System.out.println("결제 실패: " + e.getMessage());
@@ -131,7 +170,7 @@ public class PaymentMenu {
                                         case 3 -> {
                                             System.out.print("결제 번호: ");
                                             String paymentId = sc.nextLine().strip();
-                                            pointController.showPaymentPointHistory(memberId,paymentId);
+                                            pointController.showPaymentPointHistory(memberId, paymentId);
                                         }
                                         case 4 -> pointController.showPointHistory(memberId);
                                         case 0 -> {

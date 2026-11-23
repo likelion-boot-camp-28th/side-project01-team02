@@ -41,7 +41,7 @@ public class PaymentTestMain {
         member.assignId(1L);
         Screen screen = new Screen(1, 5, 6);
         Movie movie = new Movie(1L, "테스트 영화", Genre.ACTION, 120, AgeRating.ALL, LocalDate.now());
-        Schedule schedule = new Schedule(1L, movie, screen, LocalDateTime.now().plusHours(1), 12_000);
+        Schedule schedule = new Schedule(1L, movie, screen, LocalDateTime.now().plusHours(1), 30_000);
 
         ReservationService reservationService = new ReservationService(new MemoryReservationRepository());
 

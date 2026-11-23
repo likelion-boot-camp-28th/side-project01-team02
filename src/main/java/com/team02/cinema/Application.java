@@ -41,6 +41,7 @@ import com.team02.cinema.theater.view.TheaterView;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
+import java.util.Optional;
 import java.util.Scanner;
 
 
@@ -156,10 +157,12 @@ public class Application {
                 case "11" -> {
                     Member member = findLoginMember(memberController, outputView);
                     if (member != null) {
-                        if (movieController.showMovieDetail()) {
+                        Optional<Long> movieId = movieController.showMovieDetail();
+                        if (movieId.isPresent()) {
                             try {
                                 Long scheduleId = inputView.readScheduleId();
-                                Schedule schedule = scheduleService.findSchedule(scheduleId);
+                                // 고른 영화의 상영인지 확인 (다른 영화의 상영 번호는 예매되지 않도록)
+                                Schedule schedule = scheduleService.findScheduleOfMovie(movieId.get(), scheduleId);
                                 Reservation reservation = reservationController.reserve(member, schedule);
                                 if (reservation != null) {
                                     paymentMenu.runMemberId(member, scanner, reservation);

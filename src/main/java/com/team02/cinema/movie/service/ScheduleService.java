@@ -72,6 +72,17 @@ public class ScheduleService {
                 .orElseThrow(() -> new IllegalArgumentException("[ERROR] 존재하지 않는 스케줄입니다. id=" + id));
     }
 
+    // 고른 영화의 스케줄인지 확인하면서 조회: 예매하기에서 다른 영화의 상영 번호를 넣는 것을 막기 위해 사용
+    public Schedule findScheduleOfMovie(Long movieId, Long scheduleId) {
+        Schedule schedule = findSchedule(scheduleId);
+
+        // Long은 객체라서 == 대신 equals로 값을 비교한다
+        if (!schedule.getMovie().getId().equals(movieId)) {
+            throw new IllegalArgumentException("[ERROR] 선택한 영화의 상영 스케줄이 아닙니다. id=" + scheduleId);
+        }
+        return schedule;
+    }
+
     // 전체 스케줄 목록 (관리자용): 지난 상영도 확인·삭제할 수 있도록 모두 보여주고 시간순 정렬만 한다
     public List<Schedule> findAllSchedules() {
         return sortByStartTime(scheduleRepository.findAll());
